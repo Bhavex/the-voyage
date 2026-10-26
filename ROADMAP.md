@@ -5,6 +5,7 @@ Who: **Claude** (design, look, shaders, review), **Codex** (big builds, systems)
 ## Week 1: Pre-production
 - [x] World Bible written (Claude)
 - [x] Repo set up: Vite, React Three Fiber, shared notes, folder structure (Claude)
+- Setup verified on macOS: dependencies installed, build and lint pass, private GitHub repository created (Codex)
 - [x] First look: painterly ocean, sky, placeholder ship riding the waves, title card (Claude)
 - [ ] Reference board for the painterly style (Bhavishya)
 - [ ] Ship blockout in Blender (Bhavishya)
