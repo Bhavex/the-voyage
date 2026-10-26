@@ -23,10 +23,15 @@ Who: **Claude** (design, look, shaders, review), **Codex** (big builds, systems)
 - Sailing follow-up: drag-only damped camera with automatic return, solid island shores, camera clearance, wider ship view, and a timed H-key controls hint (Codex).
 
 ## Week 3: Film Island prototype
-- [ ] Fly-in cinematic and docking (Codex, camera feel by Claude)
-- [ ] Captain controller: walk, run, interact (Codex)
-- [ ] Reel-into-projector interaction, film plays on the screen (Codex)
+- [x] Fly-in cinematic and docking (Codex, camera feel by Claude)
+- [x] Captain controller: walk, run, interact (Codex)
+- [x] Reel-into-projector interaction, film plays on the screen (Codex)
+- [x] Walkable Film Island placeholder: beach, dock, four buildings, cinema, reel rack and lighthouse (Codex)
+- [x] Optional GLB loading with safe fallback, named ship parts and captain animation support (Codex)
+- [x] Reusable glowing interactions, lighthouse award panel and phone landmark camera (Codex)
 - [ ] Film Island models (Bhavishya)
+- Prototype complete with skippable arrival, mooring/boarding, bounded walking and building collision, reel carry/load, video playback or a painted coming-soon card, stop/sound controls and phone tap navigation. Blender export requirements are in `docs/MODEL_CONTRACT.md`.
+- Verified: 12 movement/collision tests, desktop and phone browser journeys, all three GLB swaps and H.264 video playback using temporary fixtures. Lint and production build pass. Protected wave settings, palettes and Ocean/Sky shaders remain unchanged. Full-world phone navigation, quality controls and compression beyond meshopt remain in Week 4.
 
 ## Week 4: Systems
 - [ ] Sea chart and quick travel (Codex)

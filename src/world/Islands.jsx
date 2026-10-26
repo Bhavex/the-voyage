@@ -31,7 +31,7 @@ export default function Islands() {
 
   return (
     <group name="islands" dispose={null}>
-      {VISIBLE_ISLANDS.map((island, index) => (
+      {VISIBLE_ISLANDS.map((island, index) => island.id === 'film' ? null : (
         <group key={island.id} name={`island_${island.id}`} position={[island.position[0], 0, island.position[1]]} rotation-y={SHORELINES[index].angle}>
           <mesh geometry={resources.geometry} material={resources.materials[index]} position={[0, -2, 0]} scale={[32, 9, 25]} />
           <mesh geometry={resources.geometry} material={resources.materials[index]} position={[-8, 7, -3]} scale={[18, 19 + index % 3 * 4, 16]} rotation-z={0.14} />

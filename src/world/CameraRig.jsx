@@ -78,6 +78,7 @@ export default function CameraRig({ view = 'intro', ship }) {
   }, [view, gl, scene, camera, ship])
 
   useFrame(({ clock }, delta) => {
+    if (view !== 'intro' && view !== 'deck') return
     const t = clock.elapsedTime
     const k = 1 - Math.pow(0.15, delta) // same easing for Set sail and follow motion
     const state = ship.current

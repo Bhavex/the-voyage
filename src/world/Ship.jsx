@@ -1,8 +1,9 @@
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { waveHeight } from './waves'
 import { hullWaveHeight } from './sailing'
+import { useOptionalModel } from './useOptionalModel'
 
 // PLACEHOLDER SHIP
 // Built from simple shapes so the world can be tested before the Blender
@@ -57,13 +58,22 @@ function sailGeometry() {
   return g
 }
 
-export default function Ship({ ship, active }) {
+export default function Ship({ ship, active, canSteer = active }) {
   const group = useRef()
   const riding = useRef()
   const sail = useRef()
   const flag = useRef()
   const wheel = useRef()
   const gradientMap = useToonGradient()
+  const model = useOptionalModel('/models/ship.glb', 'hull sail_main wheel flag mast')
+  const sailRest = useRef(1)
+  useEffect(() => {
+    if (!model) { sailRest.current = 1; return }
+    sail.current = model.scene.getObjectByName('sail_main')
+    wheel.current = model.scene.getObjectByName('wheel')
+    flag.current = model.scene.getObjectByName('flag')
+    sailRest.current = sail.current.scale.y
+  }, [model])
 
   const geo = useMemo(() => ({ hull: hullGeometry(), sail: sailGeometry() }), [])
 
@@ -117,14 +127,13 @@ export default function Ship({ ship, active }) {
     if (wheel.current) wheel.current.rotation.z = state.steering * 1.3
     if (sail.current) {
       const height = active ? SAIL_HEIGHTS[state.sailLevel] : 1
-      sail.current.scale.y = THREE.MathUtils.damp(sail.current.scale.y, height, 3, delta)
-      // Keep the top attached to the yard while the cloth gathers upwards.
-      sail.current.position.y = 8.5 - 2.8 * sail.current.scale.y
+      sail.current.scale.y = THREE.MathUtils.damp(sail.current.scale.y, height * sailRest.current, 3, delta)
+      // sail_main pivots at the yard so furling keeps its top attached.
     }
   }, -2)
 
   const startWheelDrag = (event) => {
-    if (!active || event.button !== 0) return
+    if (!canSteer || event.button !== 0) return
     event.stopPropagation()
     const state = ship.current
     state.dragging = true
@@ -137,6 +146,11 @@ export default function Ship({ ship, active }) {
   return (
     <group ref={group} name="ship">
       <group ref={riding} name="wave_riding">
+        {model ? <primitive object={model.scene} onPointerDown={(event) => {
+          let node = event.object
+          while (node && node.name !== 'wheel') node = node.parent
+          if (node) startWheelDrag(event)
+        }} /> : <>
         <mesh name="hull" geometry={geo.hull} material={[mats.deck, mats.hull]} />
 
         {/* Stern cabin */}
@@ -154,7 +168,9 @@ export default function Ship({ ship, active }) {
         <mesh name="yard" position={[0, 8.6, -0.75]} rotation-z={Math.PI / 2} material={mats.wood}>
           <cylinderGeometry args={[0.08, 0.08, 5.6, 8]} />
         </mesh>
-        <mesh ref={sail} name="sail_main" geometry={geo.sail} position={[0, 5.7, -0.9]} material={mats.sail} />
+        <group ref={sail} name="sail_main" position={[0, 8.5, -0.9]}>
+          <mesh geometry={geo.sail} position-y={-2.8} material={mats.sail} />
+        </group>
 
         {/* Flag at the top of the mast */}
         <group position={[0, 10.4, -0.6]}>
@@ -182,6 +198,7 @@ export default function Ship({ ship, active }) {
             </mesh>
           ))}
         </group>
+        </>}
       </group>
     </group>
   )

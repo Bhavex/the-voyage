@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { SAIL_NAMES } from '../world/sailing'
 
-export default function Overlay({ sailing, onSetSail, status }) {
+export default function Overlay({ sailing, onSetSail, status, showControls = true }) {
   const [quickNote, setQuickNote] = useState(false)
   const [hintVisible, setHintVisible] = useState(true)
   const [hintRound, setHintRound] = useState(0)
@@ -49,17 +49,17 @@ export default function Overlay({ sailing, onSetSail, status }) {
       </div>
 
       <div className="sailing-status" aria-live="polite" aria-atomic="true">
-        {sailing && status.island && <p className="island-name">{status.island}</p>}
-        {sailing && status.returning && <p className="sea-warning">The sea turns rough. Head back toward the islands.</p>}
+        {sailing && showControls && status.island && <p className="island-name">{status.island}</p>}
+        {sailing && showControls && status.returning && <p className="sea-warning">The sea turns rough. Head back toward the islands.</p>}
       </div>
-      <div className={`deck-hint ${sailing && hintVisible ? 'is-shown' : ''}`} aria-hidden={!sailing || !hintVisible}>
+      <div className={`deck-hint ${sailing && showControls && hintVisible ? 'is-shown' : ''}`} aria-hidden={!sailing || !showControls || !hintVisible}>
         {touch ? <p>Sailing works best on a computer for now</p> : <>
           <p>A / D or drag the wheel to steer.</p>
           <p>W raises sail · S lowers sail · Left-drag sea to look.</p>
           <p className="sail-setting" role="status">Sail: {SAIL_NAMES[status.sailLevel]}</p>
         </>}
       </div>
-      {sailing && !touch && !hintVisible && <p className="hint-reminder">Press H for controls</p>}
+      {sailing && showControls && !touch && !hintVisible && <p className="hint-reminder">Press H for controls</p>}
     </>
   )
 }

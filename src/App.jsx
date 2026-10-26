@@ -1,17 +1,15 @@
-import { useRef, useState } from 'react'
 import World from './world/World'
 import Overlay from './ui/Overlay'
-import { createSailingState } from './world/sailing'
+import IslandOverlay from './ui/IslandOverlay'
+import useVoyage from './useVoyage'
 
 export default function App() {
-  const [sailing, setSailing] = useState(false)
-  const ship = useRef(createSailingState())
-  const [status, setStatus] = useState({ sailLevel: 0, returning: false, island: '' })
-
+  const game = useVoyage()
   return (
     <main className="app">
-      <World view={sailing ? 'deck' : 'intro'} ship={ship} onStatus={setStatus} />
-      <Overlay status={status} sailing={sailing} onSetSail={() => setSailing(true)} />
+      <World game={game} />
+      <Overlay status={game.status} sailing={game.mode !== 'intro'} showControls={game.mode === 'sailing'} onSetSail={() => game.changeMode('sailing')} />
+      <IslandOverlay game={game} />
     </main>
   )
 }
