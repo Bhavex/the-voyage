@@ -19,7 +19,8 @@ Who: **Claude** (design, look, shaders, review), **Codex** (big builds, systems)
 - [x] Sea edge: gently turn back beyond 900 units and show a warning (Codex)
 - [x] Controls hint with sail status and a touch-device message (Codex)
 - Sailing pass: three animated sail levels, keyboard/drag helm, heading-aware wave riding, grid-snapped sea, smooth follow camera, seven palette-tinted islands and approach names. The bounded sea keeps coordinates small; floating-origin rebasing is not needed yet.
-- Verified: lint, production build, seven movement tests (`npm test`), and browser checks for controls, wheel dragging, island/edge messages and responsive/touch hints. Waves, palettes and Ocean/Sky shaders unchanged.
+- Verified: lint, production build, nine movement tests (`npm test`), and browser checks for controls, wheel dragging, island/edge messages and responsive/touch hints. Waves, palettes and Ocean/Sky shaders unchanged.
+- Sailing follow-up: drag-only damped camera with automatic return, solid island shores, camera clearance, wider ship view, and a timed H-key controls hint (Codex).
 
 ## Week 3: Film Island prototype
 - [ ] Fly-in cinematic and docking (Codex, camera feel by Claude)

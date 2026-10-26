@@ -105,3 +105,49 @@ test('names appear within 120 units; hidden Sky Island is excluded', () => {
   assert.equal(nearbyIsland({ x: 0, z: 99 }), '')
   assert.equal(nearbyIsland({ x: 0, z: -700 }), '')
 })
+
+test('every rotated island stops the bow at its shore and lets the ship steer free', async () => {
+  const { SHORELINES, shoreMeasure } = await import('../src/world/shorelines.js')
+  for (const shore of SHORELINES) {
+    const approach = shore.rockZ + 6.5 + 18
+    const ship = {
+      ...createSailingState(), sailLevel: 2, speed: 18, heading: shore.angle,
+      x: shore.x + shore.sin * approach,
+      z: shore.z + shore.cos * approach,
+    }
+    let touched = false
+    let closest = Infinity
+    for (let i = 0; i < 600; i++) {
+      stepSailing(ship, 1 / 60)
+      closest = Math.min(closest, shoreMeasure(shore, ship.x, ship.z, 6.5))
+      touched ||= ship.grounded
+    }
+    assert.ok(touched, `${shore.id} has a solid shoreline`)
+    assert.ok(closest >= 0.999, `${shore.id} remains outside rock`)
+    assert.ok(ship.speed < 0.1, `${shore.id} slows the ship`)
+    ship.right = true
+    let escaped = false
+    for (let i = 0; i < 3600; i++) {
+      stepSailing(ship, 1 / 60)
+      assert.ok(shoreMeasure(shore, ship.x, ship.z, 6.5) >= 0.999, `${shore.id} escape stays outside`)
+      if (shoreMeasure(shore, ship.x, ship.z, 6.5) > 1.5) { escaped = true; break }
+    }
+    assert.ok(escaped, `${shore.id} allows steering away`)
+  }
+})
+
+test('camera clearance clips its path before rock even at a rotated shore', async () => {
+  const { SHORELINES, shoreMeasure, cameraClearFraction } = await import('../src/world/shorelines.js')
+  for (const shore of SHORELINES) {
+    const near = shore.rockZ + 8
+    const fromX = shore.x + shore.sin * near
+    const fromZ = shore.z + shore.cos * near
+    const toX = shore.x - shore.sin * 80
+    const toZ = shore.z - shore.cos * 80
+    const fraction = cameraClearFraction(fromX, fromZ, toX, toZ)
+    assert.ok(fraction > 0 && fraction < 0.2, `${shore.id} camera pulls forward`)
+    const clearX = fromX + (toX - fromX) * fraction
+    const clearZ = fromZ + (toZ - fromZ) * fraction
+    assert.ok(shoreMeasure(shore, clearX, clearZ, 2) > 1, `${shore.id} camera stays clear`)
+  }
+})

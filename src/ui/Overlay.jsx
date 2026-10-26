@@ -3,6 +3,8 @@ import { SAIL_NAMES } from '../world/sailing'
 
 export default function Overlay({ sailing, onSetSail, status }) {
   const [quickNote, setQuickNote] = useState(false)
+  const [hintVisible, setHintVisible] = useState(true)
+  const [hintRound, setHintRound] = useState(0)
   const [touch, setTouch] = useState(() => navigator.maxTouchPoints > 0 || window.matchMedia('(pointer: coarse)').matches)
   useEffect(() => {
     const query = window.matchMedia('(pointer: coarse)')
@@ -10,6 +12,23 @@ export default function Overlay({ sailing, onSetSail, status }) {
     query.addEventListener('change', update)
     return () => query.removeEventListener('change', update)
   }, [])
+  useEffect(() => {
+    if (!sailing) return
+    const hide = window.setTimeout(() => setHintVisible(false), 8000)
+    return () => window.clearTimeout(hide)
+  }, [sailing, hintRound])
+  useEffect(() => {
+    if (!sailing) return
+    const show = (event) => {
+      if (event.code !== 'KeyH' || event.repeat || event.altKey || event.ctrlKey || event.metaKey) return
+      if (event.target instanceof HTMLElement && event.target.closest('input, textarea, select, [contenteditable="true"]')) return
+      event.preventDefault()
+      setHintVisible(true)
+      setHintRound((round) => round + 1)
+    }
+    window.addEventListener('keydown', show)
+    return () => window.removeEventListener('keydown', show)
+  }, [sailing])
 
   return (
     <>
@@ -33,13 +52,14 @@ export default function Overlay({ sailing, onSetSail, status }) {
         {sailing && status.island && <p className="island-name">{status.island}</p>}
         {sailing && status.returning && <p className="sea-warning">The sea turns rough. Head back toward the islands.</p>}
       </div>
-      <div className={`deck-hint ${sailing ? 'is-shown' : ''}`} aria-hidden={!sailing}>
+      <div className={`deck-hint ${sailing && hintVisible ? 'is-shown' : ''}`} aria-hidden={!sailing || !hintVisible}>
         {touch ? <p>Sailing works best on a computer for now</p> : <>
-          <p>Hold A / D or drag the ship’s wheel left / right to steer.</p>
-          <p>Press W to raise the sail, S to lower it. Move the mouse to look around.</p>
-          <p className="sail-setting" role="status">Sail: {SAIL_NAMES[status.sailLevel]} · Furled / Half / Full</p>
+          <p>A / D or drag the wheel to steer.</p>
+          <p>W raises sail · S lowers sail · Left-drag sea to look.</p>
+          <p className="sail-setting" role="status">Sail: {SAIL_NAMES[status.sailLevel]}</p>
         </>}
       </div>
+      {sailing && !touch && !hintVisible && <p className="hint-reminder">Press H for controls</p>}
     </>
   )
 }

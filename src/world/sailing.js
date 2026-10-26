@@ -1,4 +1,5 @@
 import { ISLANDS } from '../config/islands.js'
+import { canLeaveShore, moveShipAgainstShore } from './shorelines.js'
 
 export const SAIL_NAMES = ['Furled', 'Half', 'Full']
 export const SAIL_SPEEDS = [0, 9, 18]
@@ -9,7 +10,7 @@ export function createSailingState() {
   return {
     x: 0, z: 0, y: 0, heading: 0, speed: 0, steering: 0, sailLevel: 0,
     left: false, right: false, dragging: false, dragSteer: 0,
-    dragStartX: 0, pointerId: null, returning: false,
+    dragStartX: 0, pointerId: null, returning: false, grounded: false, groundedShore: null,
   }
 }
 
@@ -35,11 +36,11 @@ export function stepSailing(ship, delta) {
   if (radius > SEA_EDGE) ship.returning = true
   else if (radius < SEA_EDGE - 50) ship.returning = false
 
-  const targetSpeed = SAIL_SPEEDS[ship.sailLevel]
+  const targetSpeed = ship.grounded && !canLeaveShore(ship) ? 0 : SAIL_SPEEDS[ship.sailLevel]
   ship.speed += (targetSpeed - ship.speed) * (1 - Math.exp(-dt / 3))
   const input = ship.dragging ? ship.dragSteer : Number(ship.left) - Number(ship.right)
   ship.steering += (input - ship.steering) * (1 - Math.exp(-dt * 5))
-  const turnRate = 0.55 * (0.12 + 0.88 * ship.speed / SAIL_SPEEDS[2])
+  const turnRate = ship.grounded ? 0.55 : 0.55 * (0.12 + 0.88 * ship.speed / SAIL_SPEEDS[2])
   const edgeStrength = ship.returning ? Math.min(1, Math.max(0, (radius - 850) / 80)) : 0
   let turn = ship.steering * turnRate * (1 - edgeStrength)
   if (ship.returning) {
@@ -48,8 +49,11 @@ export function stepSailing(ship, delta) {
     turn += Math.max(-turnRate, Math.min(turnRate, error * 1.5)) * edgeStrength
   }
   ship.heading = angleDifference(ship.heading + turn * dt, 0)
-  ship.x -= Math.sin(ship.heading) * ship.speed * dt
-  ship.z -= Math.cos(ship.heading) * ship.speed * dt
+  moveShipAgainstShore(
+    ship,
+    ship.x - Math.sin(ship.heading) * ship.speed * dt,
+    ship.z - Math.cos(ship.heading) * ship.speed * dt,
+  )
 }
 
 export function nearbyIsland(ship) {

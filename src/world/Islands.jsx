@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react'
 import * as THREE from 'three'
 import { OPEN_SEA } from '../config/palette'
 import { VISIBLE_ISLANDS } from './sailing'
+import { SHORELINES } from './shorelines'
 
 // Smooth, gently irregular rock surfaces with shared geometry and three light bands.
 export default function Islands() {
@@ -31,7 +32,7 @@ export default function Islands() {
   return (
     <group name="islands" dispose={null}>
       {VISIBLE_ISLANDS.map((island, index) => (
-        <group key={island.id} name={`island_${island.id}`} position={[island.position[0], 0, island.position[1]]} rotation-y={index * 0.8}>
+        <group key={island.id} name={`island_${island.id}`} position={[island.position[0], 0, island.position[1]]} rotation-y={SHORELINES[index].angle}>
           <mesh geometry={resources.geometry} material={resources.materials[index]} position={[0, -2, 0]} scale={[32, 9, 25]} />
           <mesh geometry={resources.geometry} material={resources.materials[index]} position={[-8, 7, -3]} scale={[18, 19 + index % 3 * 4, 16]} rotation-z={0.14} />
           <mesh geometry={resources.geometry} material={resources.materials[index]} position={[11, 5, 2]} scale={[15, 14, 13]} rotation-z={-0.2} />
