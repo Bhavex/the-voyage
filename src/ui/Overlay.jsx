@@ -1,7 +1,15 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { SAIL_NAMES } from '../world/sailing'
 
-export default function Overlay({ sailing, onSetSail }) {
+export default function Overlay({ sailing, onSetSail, status }) {
   const [quickNote, setQuickNote] = useState(false)
+  const [touch, setTouch] = useState(() => navigator.maxTouchPoints > 0 || window.matchMedia('(pointer: coarse)').matches)
+  useEffect(() => {
+    const query = window.matchMedia('(pointer: coarse)')
+    const update = () => setTouch(navigator.maxTouchPoints > 0 || query.matches)
+    query.addEventListener('change', update)
+    return () => query.removeEventListener('change', update)
+  }, [])
 
   return (
     <>
@@ -21,9 +29,17 @@ export default function Overlay({ sailing, onSetSail }) {
         </p>
       </div>
 
-      <p className={`deck-hint ${sailing ? 'is-shown' : ''}`} role="status">
-        Move the mouse to look around. Steering comes next.
-      </p>
+      <div className="sailing-status" aria-live="polite" aria-atomic="true">
+        {sailing && status.island && <p className="island-name">{status.island}</p>}
+        {sailing && status.returning && <p className="sea-warning">The sea turns rough. Head back toward the islands.</p>}
+      </div>
+      <div className={`deck-hint ${sailing ? 'is-shown' : ''}`} aria-hidden={!sailing}>
+        {touch ? <p>Sailing works best on a computer for now</p> : <>
+          <p>Hold A / D or drag the ship’s wheel left / right to steer.</p>
+          <p>Press W to raise the sail, S to lower it. Move the mouse to look around.</p>
+          <p className="sail-setting" role="status">Sail: {SAIL_NAMES[status.sailLevel]} · Furled / Half / Full</p>
+        </>}
+      </div>
     </>
   )
 }

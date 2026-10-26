@@ -11,11 +11,15 @@ Who: **Claude** (design, look, shaders, review), **Codex** (big builds, systems)
 - [ ] Ship blockout in Blender (Bhavishya)
 
 ## Week 2: Core world
-- [ ] Sailing: wheel/keys steer, sails set speed, ship moves through the world (Codex)
-- [ ] Ocean follows the ship; world origin handling for long voyages (Codex)
-- [ ] Camera system: follow cam behind the ship, smooth turns, replaces CameraRig (Codex)
+- [x] Sailing: wheel/keys steer, sails set speed, ship moves through the world (Codex)
+- [x] Ocean follows the ship; world origin handling for long voyages (Codex)
+- [x] Camera system: follow cam behind the ship, smooth turns, replaces CameraRig (Codex)
 - [ ] Ocean and sky look pass, per-island palette switching (Claude)
-- [ ] Island placeholders on the horizon from islands.js (Codex)
+- [x] Island placeholders on the horizon from islands.js (Codex)
+- [x] Sea edge: gently turn back beyond 900 units and show a warning (Codex)
+- [x] Controls hint with sail status and a touch-device message (Codex)
+- Sailing pass: three animated sail levels, keyboard/drag helm, heading-aware wave riding, grid-snapped sea, smooth follow camera, seven palette-tinted islands and approach names. The bounded sea keeps coordinates small; floating-origin rebasing is not needed yet.
+- Verified: lint, production build, seven movement tests (`npm test`), and browser checks for controls, wheel dragging, island/edge messages and responsive/touch hints. Waves, palettes and Ocean/Sky shaders unchanged.
 
 ## Week 3: Film Island prototype
 - [ ] Fly-in cinematic and docking (Codex, camera feel by Claude)

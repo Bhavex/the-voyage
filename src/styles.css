@@ -89,8 +89,11 @@ body { background: #fbe9cf; color: var(--paper); font-family: var(--font-ui); ov
   transform: translateX(-50%);
   margin: 0;
   padding: 0.6rem 1.2rem;
-  border-radius: 999px;
-  background: rgba(29, 43, 58, 0.45);
+  width: max-content;
+  max-width: calc(100% - 2rem);
+  text-align: center;
+  border-radius: 1rem;
+  background: var(--ink);
   backdrop-filter: blur(6px);
   font-size: 0.95rem;
   opacity: 0;
@@ -101,4 +104,22 @@ body { background: #fbe9cf; color: var(--paper); font-family: var(--font-ui); ov
 
 @media (prefers-reduced-motion: reduce) {
   .title-card, .note, .deck-hint, .btn-primary { transition: none; }
+}
+
+.deck-hint p { margin: 0.25rem 0; }
+.sail-setting { color: var(--sun); }
+.sailing-status {
+  position: absolute;
+  top: max(1.5rem, env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(36rem, calc(100% - 2rem));
+  text-align: center;
+  pointer-events: none;
+  text-shadow: 0 2px 12px var(--ink);
+}
+.island-name { font: 800 clamp(1.5rem, 4vw, 2.5rem)/1.2 var(--font-title); margin: 0 0 0.75rem; }
+.sea-warning { background: var(--ink); border-radius: 1rem; padding: 0.75rem 1rem; margin: 0; }
+@media (max-width: 480px) {
+  .deck-hint { bottom: max(1rem, env(safe-area-inset-bottom)); font-size: 0.85rem; }
 }

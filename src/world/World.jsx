@@ -2,12 +2,14 @@ import { Canvas } from '@react-three/fiber'
 import { EffectComposer, Bloom, Vignette, Noise } from '@react-three/postprocessing'
 import { BlendFunction } from 'postprocessing'
 import Sky from './Sky'
-import Ocean from './Ocean'
+import FollowingOcean from './FollowingOcean'
+import SailingController from './SailingController'
+import Islands from './Islands'
 import Ship from './Ship'
 import CameraRig from './CameraRig'
 import { OPEN_SEA } from '../config/palette'
 
-export default function World({ view, quality = 'high' }) {
+export default function World({ view, ship, onStatus, quality = 'high' }) {
   const sun = OPEN_SEA.sunDir.map((v) => v * 100)
 
   return (
@@ -20,10 +22,13 @@ export default function World({ view, quality = 'high' }) {
       <hemisphereLight args={[OPEN_SEA.skyMid, OPEN_SEA.oceanDeep, 0.9]} />
       <directionalLight position={sun} intensity={2.2} color={OPEN_SEA.sun} />
 
+      <fog attach="fog" args={[OPEN_SEA.fog, 180, 850]} />
+      <SailingController active={view === 'deck'} ship={ship} onStatus={onStatus} />
       <Sky />
-      <Ocean segments={quality === 'low' ? 192 : 384} />
-      <Ship />
-      <CameraRig view={view} />
+      <FollowingOcean ship={ship} segments={quality === 'low' ? 192 : 384} />
+      <Islands />
+      <Ship ship={ship} active={view === 'deck'} />
+      <CameraRig view={view} ship={ship} />
 
       {quality !== 'low' && (
         <EffectComposer multisampling={0}>
