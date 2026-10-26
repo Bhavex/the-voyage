@@ -2,7 +2,7 @@ import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { wavesAsVec4 } from './waves'
-import { OPEN_SEA } from '../config/palette'
+import { atmosphere } from './lookBlend'
 
 const NOISE = /* glsl */ `
   float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }
@@ -112,31 +112,45 @@ const fragmentShader = /* glsl */ `
   }
 `
 
-const c = (hex) => new THREE.Color(hex)
+const FOG_NEAR = 80
+const FOG_FAR = 650
 
 export default function Ocean({ size = 1600, segments = 384 }) {
   const mat = useRef()
 
-  const uniforms = useMemo(
-    () => ({
+  const uniforms = useMemo(() => {
+    const { colours, sunDir } = atmosphere
+    return {
       uTime: { value: 0 },
       uWaves: { value: wavesAsVec4().map((v) => new THREE.Vector4(...v)) },
-      uSunDir: { value: new THREE.Vector3(...OPEN_SEA.sunDir) },
-      uDeep: { value: c(OPEN_SEA.oceanDeep) },
-      uMid: { value: c(OPEN_SEA.oceanMid) },
-      uShallow: { value: c(OPEN_SEA.oceanShallow) },
-      uFoam: { value: c(OPEN_SEA.foam) },
-      uSky: { value: c(OPEN_SEA.skyMid) },
-      uSun: { value: c(OPEN_SEA.sun) },
-      uFog: { value: c(OPEN_SEA.fog) },
-      uFogNear: { value: 80 },
-      uFogFar: { value: 650 },
-    }),
-    []
-  )
+      uSunDir: { value: sunDir.clone() },
+      uDeep: { value: colours.oceanDeep.clone() },
+      uMid: { value: colours.oceanMid.clone() },
+      uShallow: { value: colours.oceanShallow.clone() },
+      uFoam: { value: colours.foam.clone() },
+      uSky: { value: colours.skyMid.clone() },
+      uSun: { value: colours.sun.clone() },
+      uFog: { value: colours.fog.clone() },
+      uFogNear: { value: FOG_NEAR },
+      uFogFar: { value: FOG_FAR },
+    }
+  }, [])
 
   useFrame(({ clock }) => {
-    if (mat.current) mat.current.uniforms.uTime.value = clock.elapsedTime
+    if (!mat.current) return
+    const u = mat.current.uniforms
+    const { colours, sunDir, fogScale } = atmosphere
+    u.uTime.value = clock.elapsedTime
+    u.uSunDir.value.copy(sunDir)
+    u.uDeep.value.copy(colours.oceanDeep)
+    u.uMid.value.copy(colours.oceanMid)
+    u.uShallow.value.copy(colours.oceanShallow)
+    u.uFoam.value.copy(colours.foam)
+    u.uSky.value.copy(colours.skyMid)
+    u.uSun.value.copy(colours.sun)
+    u.uFog.value.copy(colours.fog)
+    u.uFogNear.value = FOG_NEAR * fogScale
+    u.uFogFar.value = FOG_FAR * fogScale
   })
 
   return (

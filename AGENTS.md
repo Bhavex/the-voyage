@@ -44,8 +44,8 @@ file exists in public/models/ (names and sizes: docs/MODEL_CONTRACT.md). If the 
 invalid, the code version stays.
 - Ship.jsx builds the ship from primitives with the part names hull, sail_main, wheel, flag, mast, yard.
   `public/models/ship.glb` replaces it.
-- src/world/film/Captain.jsx is a primitive captain (no limbs animation). `public/models/captain.glb`
-  replaces it and may carry Idle, Walk and Run clips.
+- src/world/film/Captain.jsx is a primitive captain with swinging legs, coloured from the open-sea palette.
+  `public/models/captain.glb` replaces it and may carry Idle, Walk and Run clips.
 - src/world/film/FilmIsland.jsx builds the Film Island (beach, dock, four buildings, cinema, reel rack,
   lighthouse) from primitives. `public/models/film-island.glb` replaces it. Building footprints, collision
   and camera stops live in src/world/film/layout.js and must be updated if the art moves them.
@@ -55,7 +55,7 @@ invalid, the code version stays.
   "Film coming soon" card plays on the screen.
 - Camera: CameraRig.jsx is the intro and open-sea follow camera. IslandDirector.jsx (arrival, docking,
   departure path) and IslandCamera.jsx (walking, booth and landmark views) are the island cameras.
-- Sea and sky colours blend per island through src/world/atmosphere.js, using the palettes in palette.js.
+- Sea and sky colours blend per island through src/world/lookBlend.js, using the palettes in palette.js.
   A new island needs an entry in islands.js and in ISLAND_PALETTES.
 
 ## Large files
