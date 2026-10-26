@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Videos stay on the owner's machine (see AGENTS.md)
+public/videos/*.mp4

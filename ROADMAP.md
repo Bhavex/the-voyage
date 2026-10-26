@@ -23,7 +23,7 @@ Who: **Claude** (design, look, shaders, review), **Codex** (big builds, systems)
 - Sailing follow-up: drag-only damped camera with automatic return, solid island shores, camera clearance, wider ship view, and a timed H-key controls hint (Codex).
 
 ## Week 3: Film Island prototype
-- [x] Fly-in cinematic and docking (Codex, camera feel by Claude)
+- [ ] Fly-in cinematic and docking (Codex, camera feel by Claude): camera feel pass in progress
 - [x] Captain controller: walk, run, interact (Codex)
 - [x] Reel-into-projector interaction, film plays on the screen (Codex)
 - [x] Walkable Film Island placeholder: beach, dock, four buildings, cinema, reel rack and lighthouse (Codex)
