@@ -13,6 +13,7 @@ import CaptainController from './film/CaptainController'
 import IslandCamera from './film/IslandCamera'
 import Captain from './film/Captain'
 import Mooring from './film/Mooring'
+import FilmBearing from './film/FilmBearing'
 import { OPEN_SEA } from '../config/palette'
 
 export default function World({ game }) {
@@ -41,6 +42,7 @@ export default function World({ game }) {
       {visiting && !touch && <Captain game={game} />}
       <CameraRig view={mode === 'sailing' ? 'deck' : mode} ship={ship} />
       <IslandCamera game={game} />
+      <FilmBearing game={game} />
       {!touch && (
         <EffectComposer multisampling={0}>
           <Bloom intensity={0.45} luminanceThreshold={0.85} luminanceSmoothing={0.2} mipmapBlur />

@@ -3,18 +3,18 @@ import { ISLANDS } from '../../config/islands.js'
 export const FILM_ISLAND = ISLANDS.find((island) => island.id === 'film')
 export const GROUND_Y = 3.2
 export const DOCK_SHIP = { x: 8, z: 40, heading: 0 }
-export const CAPTAIN_SPAWN = { x: 0, z: 38 }
+export const CAPTAIN_SPAWN = { x: 0, z: 34 }
 export const BUILDINGS = [
-  { x: -21, z: -7, width: 8, depth: 8, height: 6, roof: 'oceanDeep' },
-  { x: -19, z: 7, width: 8, depth: 7, height: 5, roof: 'cloudShadow' },
-  { x: -9, z: -16, width: 7, depth: 7, height: 5.5, roof: 'oceanMid' },
-  { x: 19, z: 10, width: 8, depth: 7, height: 6, roof: 'skyZenith' },
+  { x: -21, z: -7, width: 8, depth: 8, height: 6, roof: 'terracotta' },
+  { x: -19, z: 7, width: 8, depth: 7, height: 5, roof: 'teal' },
+  { x: -9, z: -16, width: 7, depth: 7, height: 5.5, roof: 'terracotta' },
+  { x: 19, z: 10, width: 8, depth: 7, height: 6, roof: 'teal' },
 ]
 export const LANDMARKS = [
-  { id: 'rack', target: 'reel', name: 'Film reels', action: 'Pick up', position: [-8, GROUND_Y, 8], radius: 3.4, camera: [-15, 9, 17] },
-  { id: 'projector', target: 'projector', name: 'Open-air cinema', action: 'Play', position: [4, GROUND_Y, 1.5], radius: 3.5, camera: [4, 10, -0.5] },
-  { id: 'lighthouse', target: 'lighthouse_door', name: 'Lighthouse', action: 'Read', position: [22, GROUND_Y, -3.5], radius: 3.8, camera: [33, 15, 7] },
-  { id: 'dock', target: 'dock', name: 'The dock', action: 'Set sail', position: [0, GROUND_Y, 38], radius: 3.6, camera: [16, 12, 53] },
+  { id: 'rack', target: 'reel', name: 'Film reels', action: 'Pick up', prompt: 'Pick up film reel', markerHeight: 5, position: [-8, GROUND_Y, 8], radius: 3.4, camera: [-15, 9, 17] },
+  { id: 'projector', target: 'projector', name: 'Open-air cinema', action: 'Play', prompt: 'Load reel and play', markerHeight: 6.6, position: [4, GROUND_Y, 1.5], radius: 3.5, camera: [4, 10, -0.5] },
+  { id: 'lighthouse', target: 'lighthouse_door', name: 'Lighthouse', action: 'Read', prompt: 'Read the award', markerHeight: 5.5, position: [22, GROUND_Y, -3.5], radius: 3.8, camera: [33, 15, 7] },
+  { id: 'dock', target: 'dock', name: 'The dock', action: 'Set sail', prompt: 'Set sail', markerHeight: 4, position: [0, GROUND_Y, 38], radius: 3.6, camera: [16, 12, 53] },
 ]
 
 // Shared with the placeholder layout. Rectangles are local X/Z bounds.
@@ -32,4 +32,8 @@ export const WALK_OBSTACLES = [
 
 export function worldPosition(x, y, z) {
   return [FILM_ISLAND.position[0] + x, y, FILM_ISLAND.position[1] + z]
+}
+
+export function insideProjectorBooth(captain) {
+  return captain.x > 1.1 && captain.x < 6.9 && captain.z > 1.5 && captain.z < 6.2
 }

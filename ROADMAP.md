@@ -33,6 +33,10 @@ Who: **Claude** (design, look, shaders, review), **Codex** (big builds, systems)
 - Prototype complete with skippable arrival, mooring/boarding, bounded walking and building collision, reel carry/load, video playback or a painted coming-soon card, stop/sound controls and phone tap navigation. Blender export requirements are in `docs/MODEL_CONTRACT.md`.
 - Verified: 12 movement/collision tests, desktop and phone browser journeys, all three GLB swaps and H.264 video playback using temporary fixtures. Lint and production build pass. Protected wave settings, palettes and Ocean/Sky shaders remain unchanged. Full-world phone navigation, quality controls and compression beyond meshopt remain in Week 4.
 
+- [x] Film Island feel pass: lower follow camera with heading recovery and wall clearance, framed booth view, faster accelerated walking with fixed substeps, objective markers, named prompts, carrying pose and sound invitation (Codex).
+- [x] Film land palette, grass/path details, unobstructed corner arrival title, guarded arrival skipping and a sailing direction/distance marker (Codex).
+- Feel-pass verification: lint, production build and 15 tests pass, including 20/60 fps movement parity and steering-key skip regression. Desktop/phone browser journeys, camera drag/recovery, booth framing, objective progression and real-video sound controls checked; spawn/rack/projector/lighthouse screenshots captured. Intro, sailing physics, touch navigation/camera and sea shaders are unchanged; only the explicitly requested Film Island palette was added.
+
 ## Week 4: Systems
 - [ ] Sea chart and quick travel (Codex)
 - [ ] Loading cinematic and asset compression (Codex)

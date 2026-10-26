@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useOptionalModel } from '../useOptionalModel'
+import { FILM_ISLAND as FILM_PALETTE } from '../../config/palette'
 import { FILM_ISLAND, GROUND_Y } from './layout'
 import { useToonPalette } from './materials'
 import { Block, Reel } from './Primitives'
@@ -10,6 +11,8 @@ export default function Captain({ game }) {
   const root = useRef()
   const legs = useRef()
   const m = useToonPalette()
+  const reelMaterial = useMemo(() => new THREE.MeshToonMaterial({ color: FILM_PALETTE.accent, gradientMap: m.sun.gradientMap }), [m])
+  useEffect(() => () => reelMaterial.dispose(), [reelMaterial])
   const model = useOptionalModel('/models/captain.glb')
   const mixer = useMemo(() => model ? new THREE.AnimationMixer(model.scene) : null, [model])
   const actions = useMemo(() => model ? Object.fromEntries(model.animations.map((clip) => [clip.name.toLowerCase(), mixer.clipAction(clip)])) : {}, [model, mixer])
@@ -53,11 +56,11 @@ export default function Captain({ game }) {
         <mesh position-y={0.15} material={m.oceanDeep}><cylinderGeometry args={[0.33, 0.38, 0.32, 32]} /></mesh>
         <mesh position-y={0.05} material={m.sun}><cylinderGeometry args={[0.385, 0.385, 0.08, 32]} /></mesh>
       </group>
-      {[-1, 1].map((side) => <group key={side} position={[side * 0.47, 1.38, 0]} rotation-z={side * 0.15}>
+      {[-1, 1].map((side) => <group key={side} position={[side * 0.47, 1.38, 0]} rotation-z={side * 0.15} rotation-x={game.reel === 'carrying' ? 1 : 0}>
         <Block position-y={-0.12} scale={[0.25, 0.7, 0.28]} material={m.skyZenith} />
         <mesh position-y={-0.5} material={m.skyHorizon}><sphereGeometry args={[0.15, 16, 12]} /></mesh>
       </group>)}
     </group>}
-    {game.reel === 'carrying' && <Reel name="carried_reel" position={[0.65, 1, -0.2]} rotation-y={Math.PI / 2} material={m.sun} />}
+    {game.reel === 'carrying' && <Reel name="carried_reel" position={[0, 1.15, -0.5]} scale={1.2} material={reelMaterial} />}
   </group>
 }

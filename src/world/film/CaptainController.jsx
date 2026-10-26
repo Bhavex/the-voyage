@@ -10,10 +10,11 @@ export default function CaptainController({ game }) {
   const keys = useRef({})
   const drag = useRef({ id: null, x: 0, y: 0 })
   const previous = useRef(null)
+  const orbit = useRef({ elapsed: 1, freeLook: false, movementYaw: 0 })
   useEffect(() => {
     if (game.mode !== 'island' || game.touch || game.awardOpen) return
     const canvas = gl.domElement
-    const reset = () => { keys.current = {}; drag.current.id = null }
+    const reset = () => { keys.current = {}; drag.current.id = null; orbit.current.freeLook = false; orbit.current.elapsed = 1 }
     const down = (event) => {
       if (event.altKey || event.ctrlKey || event.metaKey) return
       if (event.target instanceof HTMLElement && event.target.closest('input, textarea, select, [contenteditable="true"]')) return
@@ -29,17 +30,21 @@ export default function CaptainController({ game }) {
     const up = (event) => { keys.current[event.code] = false }
     const startDrag = (event) => {
       if (event.button !== 0) return
+      orbit.current.movementYaw = orbit.current.freeLook ? orbit.current.movementYaw : latest.current.trip.current.yaw
+      orbit.current.freeLook = true
+      orbit.current.elapsed = 0
       drag.current = { id: event.pointerId, x: event.clientX, y: event.clientY }
       canvas.setPointerCapture(event.pointerId)
     }
     const move = (event) => {
       if (event.pointerId !== drag.current.id) return
+      orbit.current.elapsed = 0
       latest.current.trip.current.yaw += (drag.current.x - event.clientX) * 0.005
-      latest.current.trip.current.pitch = Math.max(-0.15, Math.min(0.8, latest.current.trip.current.pitch + (drag.current.y - event.clientY) * 0.003))
+      latest.current.trip.current.pitch = Math.max(-0.35, Math.min(0.45, latest.current.trip.current.pitch + (drag.current.y - event.clientY) * 0.003))
       drag.current.x = event.clientX
       drag.current.y = event.clientY
     }
-    const endDrag = () => { drag.current.id = null }
+    const endDrag = () => { if (drag.current.id !== null) orbit.current.elapsed = 0; drag.current.id = null }
     window.addEventListener('keydown', down)
     window.addEventListener('keyup', up)
     window.addEventListener('blur', reset)
@@ -62,7 +67,17 @@ export default function CaptainController({ game }) {
   }, [game.mode, game.touch, game.awardOpen, gl])
   useFrame((_, delta) => {
     if (game.mode !== 'island' || game.mode !== game.trip.current.mode || game.touch) { previous.current = null; return }
-    if (!game.awardOpen) stepCaptain(game.captain.current, keys.current, game.trip.current.yaw, delta)
+    orbit.current.elapsed += Math.min(delta, 0.25)
+    if (!game.awardOpen) {
+      const captain = game.captain.current
+      const trip = game.trip.current
+      if (keys.current.KeyW && drag.current.id === null && orbit.current.elapsed >= 0.8) {
+        const error = Math.atan2(Math.sin(captain.heading - trip.yaw), Math.cos(captain.heading - trip.yaw))
+        trip.yaw += Math.sign(error) * Math.min(Math.abs(error) * (1 - Math.exp(-delta * 5)), 2.5 * delta)
+        if (Math.abs(error) < 0.015) orbit.current.freeLook = false
+      }
+      stepCaptain(captain, keys.current, orbit.current.freeLook ? orbit.current.movementYaw : trip.yaw, delta)
+    }
     else game.captain.current.moving = false
     const nearest = nearestInteraction(game.captain.current, LANDMARKS)
     if (previous.current !== nearest) {

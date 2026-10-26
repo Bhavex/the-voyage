@@ -4,6 +4,8 @@ import * as THREE from 'three'
 import { clearSailingInput, angleDifference } from '../sailing'
 import { CAPTAIN_SPAWN, DOCK_SHIP, FILM_ISLAND, worldPosition } from './layout'
 
+import { canSkipArrival } from './arrival'
+
 const ease = (t) => t * t * (3 - 2 * t)
 
 export default function IslandDirector({ game }) {
@@ -27,17 +29,18 @@ export default function IslandDirector({ game }) {
       trip.current.startRadius = Math.hypot(dx, dz)
       trip.current.startAngle = Math.atan2(dx, dz)
       route.current = new THREE.CatmullRomCurve3([
-        camera.position.clone(),
+        game.touch ? camera.position.clone() : new THREE.Vector3(...worldPosition(-50, 26, 55)),
         new THREE.Vector3(...worldPosition(-58, 30, 48)),
-        new THREE.Vector3(...worldPosition(-42, 27, -45)),
-        new THREE.Vector3(...worldPosition(47, 25, -27)),
-        new THREE.Vector3(...worldPosition(18, 12, 55)),
+        new THREE.Vector3(...worldPosition(game.touch ? -42 : -55, 27, game.touch ? -45 : 10)),
+        new THREE.Vector3(...worldPosition(47, 25, game.touch ? -27 : 30)),
+        new THREE.Vector3(...worldPosition(game.touch ? 18 : -16, 12, game.touch ? 55 : 42)),
       ], false, 'centripetal')
     }
     if (mode === 'disembark') {
       moor()
-      Object.assign(captain.current, { x: 8, z: 40, heading: Math.PI / 2, moving: true })
+      Object.assign(captain.current, { x: 8, z: 40, heading: Math.PI / 2, moving: true, speed: 0, accumulator: 0, hadInput: false, running: false })
       trip.current.yaw = 0
+      trip.current.pitch = game.touch ? 0.35 : 0
     }
     if (mode === 'departure') {
       trip.current.departX = captain.current.x
@@ -45,17 +48,20 @@ export default function IslandDirector({ game }) {
     }
     // moor uses only the stable ship ref and layout constants.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, ship, captain, trip, camera])
+  }, [mode, ship, captain, trip, camera, game.touch])
   useEffect(() => {
     if (mode !== 'arrival') return
     const skip = (event) => {
-      if (event.repeat) return
+      if (!canSkipArrival(event.code, trip.current.elapsed, event.repeat)) {
+        if (['Space', 'Enter', 'Escape'].includes(event.code)) event.preventDefault()
+        return
+      }
       event.preventDefault()
       changeMode('disembark')
     }
     window.addEventListener('keydown', skip)
     return () => window.removeEventListener('keydown', skip)
-  }, [mode, changeMode])
+  }, [mode, changeMode, trip])
 
   useFrame((_, delta) => {
     if (mode !== trip.current.mode) return
@@ -88,15 +94,18 @@ export default function IslandDirector({ game }) {
       route.current.getPoint(ease(t), point.current)
       camera.position.copy(point.current)
       const dockBlend = ease(Math.max(0, (t - 0.7) / 0.3))
-      target.current.set(...worldPosition(0, THREE.MathUtils.lerp(7, 4.5, dockBlend), 38 * dockBlend))
+      target.current.set(...worldPosition(0, THREE.MathUtils.lerp(7, 4.5, dockBlend), (game.touch ? 38 : 28) * dockBlend))
       camera.lookAt(target.current)
       if (t === 1) changeMode('disembark')
     }
     if (mode === 'disembark') {
       const t = ease(Math.min(1, trip.current.elapsed / 2.4))
-      captain.current.x = THREE.MathUtils.lerp(8, CAPTAIN_SPAWN.x, t)
-      captain.current.z = THREE.MathUtils.lerp(40, CAPTAIN_SPAWN.z, t)
+      const crossing = game.touch ? t : Math.min(1, t / 0.65)
+      captain.current.x = THREE.MathUtils.lerp(8, CAPTAIN_SPAWN.x, crossing)
+      captain.current.z = game.touch ? THREE.MathUtils.lerp(40, 38, t) : t < 0.65
+        ? THREE.MathUtils.lerp(40, 38, crossing) : THREE.MathUtils.lerp(38, CAPTAIN_SPAWN.z, (t - 0.65) / 0.35)
       captain.current.moving = true
+      if (!game.touch) captain.current.heading = THREE.MathUtils.lerp(Math.PI / 2, 0, ease(Math.max(0, (t - 0.65) / 0.35)))
       if (t === 1) {
         captain.current.heading = 0
         captain.current.moving = false

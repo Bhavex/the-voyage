@@ -10,7 +10,7 @@ Export glTF Binary (`.glb`), with textures embedded, metres as units, applied sc
 | --- | --- | --- |
 | `captain.glb` | No required child names | `coat`, `hat`; clips named `Idle`, `Walk`, `Run` (case-insensitive) |
 | `ship.glb` | `hull`, `sail_main`, `wheel`, `flag`, `mast` | `yard` |
-| `film-island.glb` | `projector`, `reel`, `screen` | `dock`, `lighthouse_door`, `lighthouse`, `reel_rack`, `cinema`, `projector_booth` for direct phone taps |
+| `film-island.glb` | `projector`, `reel`, `screen` | `dock`, `lighthouse_door`, `lighthouse`, `reel_rack`, `cinema`, `projector_booth` for direct phone taps; `booth_cutaway` for the desktop camera |
 
 Names are case-sensitive except animation clips. Keep them unique. Objects may be groups containing meshes, except `screen`, which must be a mesh. The procedural models use the same names. The current `reel` object disappears from the rack when picked up; a small procedural reel appears in the captain's hand and in the placeholder projector.
 
@@ -18,7 +18,7 @@ Names are case-sensitive except animation clips. Keep them unique. Objects may b
 
 - Origin at the soles, facing local **−Z**, about **2.6 units tall** including the hat.
 - Export the armature and animation clips together. Walk/run clips should move the limbs in place; the controller moves the root.
-- The carried reel currently attaches at local **[0.65, 1, −0.2]**. Match the right-hand pose to that point; a named hand-bone attachment can be added with the final rig.
+- The carried reel currently attaches at local **[0, 1.15, −0.5]**. Match a two-handed carrying pose to that point; a named hand-bone attachment can be added with the final rig.
 
 ## Ship
 
@@ -35,6 +35,7 @@ Names are case-sensitive except animation clips. Keep them unique. Objects may b
 - Dock runs along **+Z**, centred on **X = 0**, from **Z = 18 to 44**, about **6 units wide**, top **Y = 3.2**. The moored ship sits at **[8, 0, 40]**.
 - Rack/reel interaction: **[−8, 3.2, 8]**. Projector interaction: **[4, 3.2, 1.5]**, with projector body near **[4, 5.4, 4.8]**.
 - Screen: mesh centred at **[4, 8.4, −19.5]**, facing **+Z**, about **14 × 7.875** (16:9). Map the complete screen face to UV 0–1 using standard glTF UV orientation. The app replaces this mesh's material with the painted card/video; model the surrounding frame separately.
+- Group the projector booth’s walls and roof under `booth_cutaway`. That group hides only while the desktop captain is inside, keeping the captain and screen visible in the framed shot. The projector and its pedestal stay visible.
 - Lighthouse centre: **[22, 3.2, −8]**, door faces +Z; interaction point **[22, 3.2, −3.5]**.
 - Building footprints, seats, booth walls, camera stops and collision bounds live together in `src/world/film/layout.js`. Match that layout when replacing the scene. If the final art moves a building or landmark, update that file at the same time; collision is deliberately simple and does not derive from arbitrary mesh triangles.
 

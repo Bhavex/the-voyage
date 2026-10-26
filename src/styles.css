@@ -175,3 +175,14 @@ body { background: #fbe9cf; color: var(--paper); font-family: var(--font-ui); ov
   .walking-hint { max-width: calc(100% - 2rem); white-space: normal; text-align: center; }
 }
 @media (prefers-reduced-motion: reduce) { .arrival-title { animation: none; } }
+
+.arrival-card-corner { inset: 1.5rem auto auto 1.5rem; text-align: left; max-width: 30rem; }
+.arrival-card-corner .arrival-title { font-size: clamp(2rem, 4vw, 3.5rem); }
+.arrival-card-corner p { margin: 0.5rem 0; }
+.objective-line { margin: 0.65rem 0 0; font-size: 0.95rem; color: var(--paper); text-shadow: 0 1px 8px var(--ink); }
+.sound-invitation { position: absolute; left: 50%; top: 53%; transform: translate(-50%, -50%); z-index: 2; }
+.sound-invitation:hover { transform: translate(-50%, -50%); }
+.film-bearing { position: absolute; transform: translate(-50%, -50%); padding: 0.4rem 0.6rem; border-radius: 0.5rem; background: var(--ink); color: var(--paper); font-size: 0.75rem; text-align: center; pointer-events: none; white-space: nowrap; }
+.film-bearing-arrow { display: inline-block; margin-right: 0.4rem; color: var(--sun); }
+
+.inventory-note-desktop { top: 9.5rem; }

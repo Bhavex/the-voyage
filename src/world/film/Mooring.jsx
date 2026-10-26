@@ -1,7 +1,7 @@
 import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { OPEN_SEA } from '../../config/palette'
+import { OPEN_SEA, FILM_ISLAND as FILM_PALETTE } from '../../config/palette'
 import { FILM_ISLAND, worldPosition } from './layout'
 
 export default function Mooring({ game }) {
@@ -31,7 +31,7 @@ export default function Mooring({ game }) {
   return <group ref={root} name="mooring">
     <lineSegments geometry={geometry} frustumCulled={false}><lineBasicMaterial color={OPEN_SEA.oceanDeep} /></lineSegments>
     <mesh ref={plank} name="gangplank">
-      <boxGeometry args={[1, 0.18, 1.7]} /><meshToonMaterial color={OPEN_SEA.cloudShadow} />
+      <boxGeometry args={[1, 0.18, 1.7]} /><meshToonMaterial color={FILM_PALETTE.wood} />
     </mesh>
   </group>
 }

@@ -1,14 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createSailingState } from './world/sailing'
+import { filmObjective } from './world/film/objectives'
 import { createCaptain } from './world/film/movement'
 
 export default function useVoyage() {
   const [mode, setMode] = useState('intro')
   const [touch] = useState(() => navigator.maxTouchPoints > 0 || window.matchMedia('(pointer: coarse)').matches)
   const videoRef = useRef(null)
+  const bearingElement = useRef(null)
   const ship = useRef(createSailingState())
   const captain = useRef(createCaptain())
-  const trip = useRef({ mode: 'intro', elapsed: 0, canArrive: true, yaw: 0, pitch: 0.35 })
+  const trip = useRef({ mode: 'intro', elapsed: 0, canArrive: true, yaw: 0, pitch: 0 })
   const [status, setStatus] = useState({ sailLevel: 0, returning: false, island: '' })
   const [nearby, setNearby] = useState(null)
   const [focus, setFocus] = useState('dock')
@@ -16,6 +18,9 @@ export default function useVoyage() {
   const [film, setFilm] = useState('idle')
   const [playRequest, setPlayRequest] = useState(0)
   const [awardOpen, setAwardOpen] = useState(false)
+  const [watched, setWatched] = useState(false)
+  useEffect(() => { if (film === 'playing' || film === 'soon') setWatched(true) }, [film])
+  const objective = filmObjective(reel, film, watched)
   const [message, setMessage] = useState('')
   useEffect(() => {
     if (!message) return
@@ -30,6 +35,7 @@ export default function useVoyage() {
     if (next === 'arrival') setFocus('dock')
     if (next === 'departure') {
       setReel('rack')
+      setWatched(false)
       setFilm('idle')
       setAwardOpen(false)
       setFocus('dock')
@@ -52,6 +58,6 @@ export default function useVoyage() {
       setPlayRequest((request) => request + 1)
     }
   }, [mode, awardOpen, changeMode, reel, film])
-  return { mode, changeMode, touch, ship, captain, trip, videoRef, status, setStatus, nearby, setNearby,
+  return { bearingElement, objective, mode, changeMode, touch, ship, captain, trip, videoRef, status, setStatus, nearby, setNearby,
     focus, setFocus, reel, film, setFilm, playRequest, awardOpen, setAwardOpen, message, interact }
 }

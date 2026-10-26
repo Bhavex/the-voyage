@@ -1,7 +1,8 @@
-import { WALK_OBSTACLES } from './layout.js'
+import { CAPTAIN_SPAWN, WALK_OBSTACLES } from './layout.js'
 
+const FIXED_STEP = 1 / 120
 export function createCaptain() {
-  return { x: 0, z: 38, heading: 0, speed: 0, moving: false, running: false }
+  return { ...CAPTAIN_SPAWN, heading: 0, speed: 0, moving: false, running: false, accumulator: 0, moveX: 0, moveZ: -1 }
 }
 
 export function walkable(x, z) {
@@ -12,34 +13,44 @@ export function walkable(x, z) {
 }
 
 export function stepCaptain(captain, keys, yaw, delta) {
-  const dt = Math.min(delta, 0.05)
-  let sideways = Number(keys.KeyD || false) - Number(keys.KeyA || false)
-  let forward = Number(keys.KeyW || false) - Number(keys.KeyS || false)
+  const sideways = Number(keys.KeyD || false) - Number(keys.KeyA || false)
+  const forward = Number(keys.KeyW || false) - Number(keys.KeyS || false)
   const length = Math.hypot(sideways, forward)
-  captain.moving = length > 0
   captain.running = !!(keys.ShiftLeft || keys.ShiftRight)
-  captain.speed = length ? (captain.running ? 7 : 3.8) : 0
-  if (!length) return
-  sideways /= length
-  forward /= length
-  const dx = (Math.cos(yaw) * sideways - Math.sin(yaw) * forward) * captain.speed * dt
-  const dz = (-Math.sin(yaw) * sideways - Math.cos(yaw) * forward) * captain.speed * dt
-  // Resolve each axis separately so the captain slides past corners.
-  if (walkable(captain.x + dx, captain.z)) captain.x += dx
-  if (walkable(captain.x, captain.z + dz)) captain.z += dz
-  const desired = Math.atan2(-dx, -dz)
-  const error = Math.atan2(Math.sin(desired - captain.heading), Math.cos(desired - captain.heading))
-  captain.heading += error * (1 - Math.exp(-dt * 12))
+  const maximum = captain.running ? 9 : 5.5
+  const targetSpeed = length ? maximum : 0
+  if (length) {
+    captain.moveX = (Math.cos(yaw) * sideways - Math.sin(yaw) * forward) / length
+    captain.moveZ = (-Math.sin(yaw) * sideways - Math.cos(yaw) * forward) / length
+  }
+  if (!length && captain.hadInput) captain.stopRate = captain.speed / 0.1
+  captain.hadInput = length > 0
+  captain.accumulator = (captain.accumulator ?? 0) + Math.max(0, Math.min(delta, 0.25))
+  // Keep the same acceleration and collision steps at every rendering frame rate.
+  while (captain.accumulator + 1e-9 >= FIXED_STEP) {
+    captain.accumulator -= FIXED_STEP
+    const oldSpeed = captain.speed
+    const rate = targetSpeed ? maximum / 0.15 : (captain.stopRate || 55)
+    const change = Math.min(Math.abs(targetSpeed - oldSpeed), rate * FIXED_STEP)
+    captain.speed += Math.sign(targetSpeed - oldSpeed) * change
+    const distance = (oldSpeed + captain.speed) * 0.5 * FIXED_STEP
+    const dx = (captain.moveX ?? 0) * distance, dz = (captain.moveZ ?? -1) * distance
+    if (walkable(captain.x + dx, captain.z)) captain.x += dx
+    if (walkable(captain.x, captain.z + dz)) captain.z += dz
+    if (length) {
+      const desired = Math.atan2(-captain.moveX, -captain.moveZ)
+      const error = Math.atan2(Math.sin(desired - captain.heading), Math.cos(desired - captain.heading))
+      captain.heading += error * (1 - Math.exp(-FIXED_STEP * 12))
+    }
+  }
+  captain.moving = captain.speed > 0.01
 }
 
 export function nearestInteraction(captain, landmarks) {
   let result = null, best = Infinity
   for (const landmark of landmarks) {
     const distance = Math.hypot(captain.x - landmark.position[0], captain.z - landmark.position[2])
-    if (distance < landmark.radius && distance < best) {
-      result = landmark.id
-      best = distance
-    }
+    if (distance < landmark.radius && distance < best) { result = landmark.id; best = distance }
   }
   return result
 }

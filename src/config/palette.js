@@ -15,3 +15,16 @@ export const OPEN_SEA = {
   foam: '#f6fbf7',
   fog: '#f3dfc6',
 }
+
+// Land-only Film Island colours. Open sea, sky and wave shading remain unchanged.
+export const FILM_ISLAND = {
+  sand: '#e2b97f',
+  grass: '#8db86b',
+  path: '#cfae86',
+  walls: '#f1e6d6',
+  terracotta: '#c4683f',
+  teal: '#3f7f86',
+  wood: '#8a5b3c',
+  trim: '#203b45',
+  accent: '#f2a93b',
+}
