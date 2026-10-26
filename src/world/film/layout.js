@@ -4,6 +4,12 @@ export const FILM_ISLAND = ISLANDS.find((island) => island.id === 'film')
 export const GROUND_Y = 3.2
 export const DOCK_SHIP = { x: 8, z: 40, heading: 0 }
 export const CAPTAIN_SPAWN = { x: 0, z: 34 }
+// Where the fly-in ends and the docking shot sits: above and behind the moored ship, looking along the
+// dock toward the cinema. IslandCamera keeps this framing while the captain steps ashore.
+export const DOCK_CAMERA = [16, 12, 53]
+export const DOCK_LOOK = [6, 6, 32]
+// Middle of the island (cinema, booth and lighthouse), used to frame the island during the fly-in.
+export const ISLAND_HEART = [8, 9, -8]
 export const BUILDINGS = [
   { x: -21, z: -7, width: 8, depth: 8, height: 6, roof: 'terracotta' },
   { x: -19, z: 7, width: 8, depth: 7, height: 5, roof: 'teal' },
