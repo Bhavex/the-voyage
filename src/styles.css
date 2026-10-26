@@ -1,0 +1,104 @@
+/* Type: Shippori Mincho B1 for titles (film title card feel),
+   Zen Kaku Gothic New for small UI text. */
+:root {
+  --ink: #1d2b3a;
+  --paper: #fff6e8;
+  --paper-dim: rgba(255, 246, 232, 0.82);
+  --sun: #f2b84b;
+  --shadow: rgba(29, 43, 58, 0.35);
+  --font-title: 'Shippori Mincho B1', 'Georgia', serif;
+  --font-ui: 'Zen Kaku Gothic New', 'Segoe UI', system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; }
+body { background: #fbe9cf; color: var(--paper); font-family: var(--font-ui); overflow: hidden; }
+
+.app { position: fixed; inset: 0; }
+.app canvas { display: block; }
+
+.title-card {
+  position: absolute;
+  left: clamp(1.5rem, 6vw, 5rem);
+  bottom: clamp(2rem, 10vh, 6rem);
+  max-width: 36rem;
+  transition: opacity 1.4s ease, transform 1.4s ease;
+}
+.title-card.is-hidden { opacity: 0; transform: translateY(1.5rem); pointer-events: none; }
+
+.title {
+  font-family: var(--font-title);
+  font-weight: 800;
+  font-size: clamp(3rem, 9vw, 6.5rem);
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+  margin: 0 0 0.75rem;
+  color: var(--paper);
+  text-shadow: 0 2px 18px var(--shadow);
+}
+.subtitle {
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  line-height: 1.5;
+  margin: 0 0 1.75rem;
+  color: var(--paper-dim);
+  text-shadow: 0 1px 8px var(--shadow);
+}
+
+.actions { display: flex; gap: 1.25rem; align-items: center; flex-wrap: wrap; }
+
+.btn-primary,
+.btn-quiet {
+  font: 700 1.05rem/1 var(--font-ui);
+  cursor: pointer;
+  border: none;
+}
+.btn-primary {
+  background: var(--paper);
+  color: var(--ink);
+  padding: 0.95rem 1.9rem;
+  border-radius: 999px;
+  box-shadow: 0 6px 24px var(--shadow);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+.btn-primary:hover { background: #fff; transform: translateY(-2px); }
+.btn-quiet {
+  background: none;
+  color: var(--paper);
+  padding: 0.5rem 0.25rem;
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+  text-shadow: 0 1px 8px var(--shadow);
+}
+.btn-primary:focus-visible,
+.btn-quiet:focus-visible { outline: 3px solid var(--sun); outline-offset: 4px; }
+
+.note {
+  margin: 1rem 0 0;
+  font-size: 0.95rem;
+  color: var(--paper-dim);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  text-shadow: 0 1px 8px var(--shadow);
+}
+.note.is-shown { opacity: 1; }
+
+.deck-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 2rem;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 0.6rem 1.2rem;
+  border-radius: 999px;
+  background: rgba(29, 43, 58, 0.45);
+  backdrop-filter: blur(6px);
+  font-size: 0.95rem;
+  opacity: 0;
+  transition: opacity 1s ease 1.2s;
+  pointer-events: none;
+}
+.deck-hint.is-shown { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .title-card, .note, .deck-hint, .btn-primary { transition: none; }
+}
