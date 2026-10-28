@@ -1,6 +1,7 @@
 import { Canvas } from '@react-three/fiber'
 import { EffectComposer, Bloom, Vignette, Noise } from '@react-three/postprocessing'
 import { BlendFunction } from 'postprocessing'
+import Atmosphere from './Atmosphere'
 import Sky from './Sky'
 import FollowingOcean from './FollowingOcean'
 import SailingController from './SailingController'
@@ -14,11 +15,9 @@ import IslandCamera from './film/IslandCamera'
 import Captain from './film/Captain'
 import Mooring from './film/Mooring'
 import FilmBearing from './film/FilmBearing'
-import { OPEN_SEA } from '../config/palette'
 
 export default function World({ game }) {
   const { mode, ship, touch } = game
-  const sun = OPEN_SEA.sunDir.map((v) => v * 100)
   const visiting = ['disembark', 'island', 'departure'].includes(mode)
   return (
     <Canvas
@@ -26,10 +25,7 @@ export default function World({ game }) {
       camera={{ fov: 45, near: 0.1, far: 2000, position: [14, 3.2, 10] }}
       gl={{ antialias: true, powerPreference: 'high-performance' }}
     >
-      <color attach="background" args={[OPEN_SEA.skyHorizon]} />
-      <hemisphereLight args={[OPEN_SEA.skyMid, OPEN_SEA.oceanDeep, 0.9]} />
-      <directionalLight position={sun} intensity={2.2} color={OPEN_SEA.sun} />
-      <fog attach="fog" args={[OPEN_SEA.fog, 180, 850]} />
+      <Atmosphere ship={ship} />
       <IslandDirector game={game} />
       <SailingController active={mode === 'sailing'} ship={ship} onStatus={game.setStatus} />
       <CaptainController game={game} />

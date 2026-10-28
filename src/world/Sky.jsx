@@ -1,7 +1,7 @@
 import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { OPEN_SEA } from '../config/palette'
+import { atmosphere } from './lookBlend'
 
 const vertexShader = /* glsl */ `
   varying vec3 vDir;
@@ -65,28 +65,35 @@ const fragmentShader = /* glsl */ `
   }
 `
 
-const c = (hex) => new THREE.Color(hex)
-
 export default function Sky() {
   const mat = useRef()
   const mesh = useRef()
-  const uniforms = useMemo(
-    () => ({
+  const uniforms = useMemo(() => {
+    const { colours, sunDir } = atmosphere
+    return {
       uTime: { value: 0 },
-      uZenith: { value: c(OPEN_SEA.skyZenith) },
-      uMid: { value: c(OPEN_SEA.skyMid) },
-      uHorizon: { value: c(OPEN_SEA.skyHorizon) },
-      uSun: { value: c(OPEN_SEA.sun) },
-      uCloudLight: { value: c(OPEN_SEA.cloudLight) },
-      uCloudShadow: { value: c(OPEN_SEA.cloudShadow) },
-      uSunDir: { value: new THREE.Vector3(...OPEN_SEA.sunDir) },
-    }),
-    []
-  )
+      uZenith: { value: colours.skyZenith.clone() },
+      uMid: { value: colours.skyMid.clone() },
+      uHorizon: { value: colours.skyHorizon.clone() },
+      uSun: { value: colours.sun.clone() },
+      uCloudLight: { value: colours.cloudLight.clone() },
+      uCloudShadow: { value: colours.cloudShadow.clone() },
+      uSunDir: { value: sunDir.clone() },
+    }
+  }, [])
 
   useFrame(({ clock, camera }) => {
     if (!mat.current || !mesh.current) return
-    mat.current.uniforms.uTime.value = clock.elapsedTime
+    const u = mat.current.uniforms
+    const { colours, sunDir } = atmosphere
+    u.uTime.value = clock.elapsedTime
+    u.uZenith.value.copy(colours.skyZenith)
+    u.uMid.value.copy(colours.skyMid)
+    u.uHorizon.value.copy(colours.skyHorizon)
+    u.uSun.value.copy(colours.sun)
+    u.uCloudLight.value.copy(colours.cloudLight)
+    u.uCloudShadow.value.copy(colours.cloudShadow)
+    u.uSunDir.value.copy(sunDir)
     mesh.current.position.copy(camera.position) // sky travels with the viewer
   })
 

@@ -18,6 +18,16 @@ export default function CameraRig({ view = 'intro', ship }) {
   const ndc = useRef(new THREE.Vector2())
   const clearDistance = useRef(FOLLOW_DISTANCE)
   const deckAge = useRef(0)
+  const previousView = useRef(view)
+
+  // Coming back from an island, aim from where the camera is already pointing instead of the old sea
+  // view, so the hand-over from IslandCamera doesn't swing.
+  useEffect(() => {
+    if (view === 'deck' && previousView.current !== 'intro') {
+      camera.getWorldDirection(look.current).multiplyScalar(40).add(camera.position)
+    }
+    previousView.current = view
+  }, [view, camera])
 
   useEffect(() => {
     if (view !== 'deck') return

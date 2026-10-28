@@ -14,16 +14,17 @@ Who: **Claude** (design, look, shaders, review), **Codex** (big builds, systems)
 - [x] Sailing: wheel/keys steer, sails set speed, ship moves through the world (Codex)
 - [x] Ocean follows the ship; world origin handling for long voyages (Codex)
 - [x] Camera system: follow cam behind the ship, smooth turns, replaces CameraRig (Codex)
-- [ ] Ocean and sky look pass, per-island palette switching (Claude)
+- [x] Ocean and sky look pass, per-island palette switching (Claude)
 - [x] Island placeholders on the horizon from islands.js (Codex)
 - [x] Sea edge: gently turn back beyond 900 units and show a warning (Codex)
 - [x] Controls hint with sail status and a touch-device message (Codex)
 - Sailing pass: three animated sail levels, keyboard/drag helm, heading-aware wave riding, grid-snapped sea, smooth follow camera, seven palette-tinted islands and approach names. The bounded sea keeps coordinates small; floating-origin rebasing is not needed yet.
 - Verified: lint, production build, nine movement tests (`npm test`), and browser checks for controls, wheel dragging, island/edge messages and responsive/touch hints. Waves, palettes and Ocean/Sky shaders unchanged.
+- Look pass: each island has its own palette in `palette.js` (sky, sea, fog, sun, light, and rock colours that stand apart from the water); `lookBlend.js` blends the open sea toward nearby islands from 280 to 90 units away. `waves.js` is unchanged; Ocean/Sky shaders only get their colours from the blend.
 - Sailing follow-up: drag-only damped camera with automatic return, solid island shores, camera clearance, wider ship view, and a timed H-key controls hint (Codex).
 
 ## Week 3: Film Island prototype
-- [x] Fly-in cinematic and docking (Codex, camera feel by Claude)
+- [x] Fly-in cinematic and docking (Codex, camera feel by Claude): the ship now sails one smooth path from its own heading to the berth, the camera starts from the sailing view with no cut, frames island, ship and cinema, and the dock, walk-off and departure shots hand over with no jumps; skip (Space/Enter/Esc) and the phone path use the same flight (checked with a stepped simulation and screenshots, not yet on a real phone)
 - [x] Captain controller: walk, run, interact (Codex)
 - [x] Reel-into-projector interaction, film plays on the screen (Codex)
 - [x] Walkable Film Island placeholder: beach, dock, four buildings, cinema, reel rack and lighthouse (Codex)

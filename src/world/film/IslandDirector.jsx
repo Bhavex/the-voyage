@@ -2,39 +2,51 @@ import { useEffect, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { clearSailingInput, angleDifference } from '../sailing'
-import { CAPTAIN_SPAWN, DOCK_SHIP, FILM_ISLAND, worldPosition } from './layout'
-
+import { CAPTAIN_SPAWN, DOCK_SHIP, FILM_ISLAND } from './layout'
 import { canSkipArrival } from './arrival'
+import { approachPoints, createApproachCurve, flightDuration, flightShot, pathDistance, smootherstep } from './flight'
 
 const ease = (t) => t * t * (3 - 2 * t)
 
 export default function IslandDirector({ game }) {
   const { mode, ship, captain, trip, changeMode } = game
   const { camera } = useThree()
-  const route = useRef(null)
+  const flight = useRef(null)
   const point = useRef(new THREE.Vector3())
-  const target = useRef(new THREE.Vector3())
+  const tangent = useRef(new THREE.Vector3())
+  const forward = useRef(new THREE.Vector3())
+  const previous = useRef(new THREE.Vector3())
+  const previousLook = useRef(new THREE.Vector3())
   const moor = () => {
     Object.assign(ship.current, { x: FILM_ISLAND.position[0] + DOCK_SHIP.x, z: FILM_ISLAND.position[1] + DOCK_SHIP.z,
       heading: DOCK_SHIP.heading, speed: 0, sailLevel: 0, steering: 0, grounded: false, groundedShore: null })
     clearSailingInput(ship.current)
   }
   useEffect(() => {
+    flight.current = null
     if (mode === 'arrival') {
-      clearSailingInput(ship.current)
-      ship.current.sailLevel = 0
+      const s = ship.current
+      clearSailingInput(s)
+      s.sailLevel = 0
       trip.current.canArrive = false
-      const dx = ship.current.x - FILM_ISLAND.position[0]
-      const dz = ship.current.z - FILM_ISLAND.position[1]
-      trip.current.startRadius = Math.hypot(dx, dz)
-      trip.current.startAngle = Math.atan2(dx, dz)
-      route.current = new THREE.CatmullRomCurve3([
-        game.touch ? camera.position.clone() : new THREE.Vector3(...worldPosition(-50, 26, 55)),
-        new THREE.Vector3(...worldPosition(-58, 30, 48)),
-        new THREE.Vector3(...worldPosition(game.touch ? -42 : -55, 27, game.touch ? -45 : 10)),
-        new THREE.Vector3(...worldPosition(47, 25, game.touch ? -27 : 30)),
-        new THREE.Vector3(...worldPosition(game.touch ? 18 : -16, 12, game.touch ? 55 : 42)),
-      ], false, 'centripetal')
+      // The ship sails a smooth path to the berth, leaving at its own heading and speed. The camera starts
+      // exactly where the sailing camera is, so nothing cuts or jumps when the fly-in begins.
+      const curve = createApproachCurve(approachPoints({ x: s.x - FILM_ISLAND.position[0], z: s.z - FILM_ISLAND.position[1] }, s.heading))
+      const length = curve.getLength()
+      const duration = flightDuration(length)
+      camera.getWorldDirection(forward.current)
+      flight.current = {
+        curve, length, duration,
+        startSlope: Math.max(s.speed, 6) * duration,
+        camOffset: new THREE.Vector3(camera.position.x - s.x, camera.position.y, camera.position.z - s.z),
+        lookOffset: new THREE.Vector3().copy(camera.position).addScaledVector(forward.current, 42).sub(new THREE.Vector3(s.x, 0, s.z)),
+        wide: THREE.MathUtils.clamp(1.2 / camera.aspect, 1, 1.8), // pull back a little on tall phone screens
+      }
+      previous.current.copy(camera.position)
+      trip.current.lookPoint = new THREE.Vector3().copy(camera.position).addScaledVector(forward.current, 42)
+      trip.current.camVelocity = new THREE.Vector3()
+      trip.current.lookVelocity = new THREE.Vector3()
+      previousLook.current.copy(trip.current.lookPoint)
     }
     if (mode === 'disembark') {
       moor()
@@ -76,27 +88,40 @@ export default function IslandDirector({ game }) {
       return
     }
     trip.current.elapsed += Math.min(delta, 0.05)
-    if (mode === 'arrival' && route.current) {
-      const t = Math.min(1, trip.current.elapsed / 8)
-      const a = ease(Math.min(1, t / 0.75))
-      const angle = trip.current.startAngle + angleDifference(0, trip.current.startAngle) * a
-      const radius = THREE.MathUtils.lerp(trip.current.startRadius, 72, a)
-      let x = Math.sin(angle) * radius, z = Math.cos(angle) * radius
-      if (t > 0.75) {
-        const end = ease((t - 0.75) / 0.25)
-        x = THREE.MathUtils.lerp(0, DOCK_SHIP.x, end)
-        z = THREE.MathUtils.lerp(72, DOCK_SHIP.z, end)
-      }
-      const nextX = FILM_ISLAND.position[0] + x, nextZ = FILM_ISLAND.position[1] + z
-      const heading = Math.atan2(s.x - nextX, s.z - nextZ)
-      s.heading += angleDifference(t > 0.95 ? 0 : heading, s.heading) * (1 - Math.exp(-delta * 5))
-      s.x = nextX; s.z = nextZ; s.speed = 0
-      route.current.getPoint(ease(t), point.current)
-      camera.position.copy(point.current)
-      const dockBlend = ease(Math.max(0, (t - 0.7) / 0.3))
-      target.current.set(...worldPosition(0, THREE.MathUtils.lerp(7, 4.5, dockBlend), (game.touch ? 38 : 28) * dockBlend))
-      camera.lookAt(target.current)
-      if (t === 1) changeMode('disembark')
+    if (mode === 'arrival' && flight.current) {
+      const f = flight.current
+      const elapsed = trip.current.elapsed
+      const tau = Math.min(1, elapsed / f.duration)
+      const u = pathDistance(tau, f.length, f.startSlope) / f.length
+      f.curve.getPointAt(u, point.current)
+      f.curve.getTangentAt(u, tangent.current)
+      const [ix, iz] = FILM_ISLAND.position
+      s.x = ix + point.current.x
+      s.z = iz + point.current.z
+      s.speed = 0
+      s.steering = 0
+      s.heading += angleDifference(Math.atan2(-tangent.current.x, -tangent.current.z), s.heading) * (1 - Math.exp(-delta * (4 + 4 * smootherstep((tau - 0.75) / 0.15))))
+      if (tau === 1) s.heading = DOCK_SHIP.heading
+      const shot = flightShot(point.current, { x: -Math.sin(s.heading), z: -Math.cos(s.heading) }, u, smootherstep((tau - 0.7) / 0.3), f.wide)
+      // Blend from the sailing camera's offset to the shot over the first moments, then follow the shot.
+      const intro = smootherstep(elapsed / 2.4)
+      camera.position.set(
+        s.x + THREE.MathUtils.lerp(f.camOffset.x, ix + shot.cam[0] - s.x, intro),
+        THREE.MathUtils.lerp(f.camOffset.y, shot.cam[1], intro),
+        s.z + THREE.MathUtils.lerp(f.camOffset.z, iz + shot.cam[2] - s.z, intro),
+      )
+      const look = trip.current.lookPoint.set(
+        s.x + THREE.MathUtils.lerp(f.lookOffset.x, ix + shot.look[0] - s.x, intro),
+        THREE.MathUtils.lerp(f.lookOffset.y, shot.look[1], intro),
+        s.z + THREE.MathUtils.lerp(f.lookOffset.z, iz + shot.look[2] - s.z, intro),
+      )
+      camera.lookAt(look)
+      // IslandCamera takes over from this pose and speed, so docking never lurches.
+      trip.current.camVelocity.subVectors(camera.position, previous.current).divideScalar(Math.max(delta, 1e-3))
+      trip.current.lookVelocity.subVectors(look, previousLook.current).divideScalar(Math.max(delta, 1e-3))
+      previous.current.copy(camera.position)
+      previousLook.current.copy(look)
+      if (tau === 1) changeMode('disembark')
     }
     if (mode === 'disembark') {
       const t = ease(Math.min(1, trip.current.elapsed / 2.4))

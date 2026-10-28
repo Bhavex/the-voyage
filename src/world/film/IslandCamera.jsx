@@ -1,7 +1,11 @@
 import { useMemo } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
-import { BUILDINGS, GROUND_Y, LANDMARKS, insideProjectorBooth, worldPosition } from './layout'
+import { cameraClearFraction } from '../shorelines'
+import { BUILDINGS, DOCK_CAMERA, DOCK_LOOK, GROUND_Y, LANDMARKS, insideProjectorBooth, worldPosition } from './layout'
+import { smoothDampVector } from './flight'
+
+const ease = (t) => { const x = Math.min(1, Math.max(0, t)); return x * x * (3 - 2 * x) }
 
 export default function IslandCamera({ game }) {
   const { camera } = useThree()
@@ -10,6 +14,8 @@ export default function IslandCamera({ game }) {
     look: new THREE.Vector3(...worldPosition(0, 4.5, 38)), pivot: new THREE.Vector3(),
     direction: new THREE.Vector3(), alternate: new THREE.Vector3(), hit: new THREE.Vector3(), ray: new THREE.Ray(),
     distance: 7, active: false, following: false, composition: null,
+    velocity: new THREE.Vector3(), lookVelocity: new THREE.Vector3(), shipPosition: new THREE.Vector3(), shipLook: new THREE.Vector3(), waypoint: new THREE.Vector3(),
+    sinceSwitch: 0,
   }), [])
   // Only substantial architecture blocks the camera; trees and small props do not.
   const boxes = useMemo(() => [...BUILDINGS,
@@ -21,15 +27,40 @@ export default function IslandCamera({ game }) {
     new THREE.Vector3(...worldPosition(b.x - b.width / 2 - 0.25, GROUND_Y, b.z - b.depth / 2 - 0.25)),
     new THREE.Vector3(...worldPosition(b.x + b.width / 2 + 0.25, GROUND_Y + b.height + 1.3, b.z + b.depth / 2 + 0.25)),
   ) })), [])
-  useFrame((_, delta) => {
+  useFrame((_, frameDelta) => {
+    const delta = Math.min(frameDelta, 0.05)
     const active = ['disembark', 'island', 'departure'].includes(game.mode)
     if (!active) { state.active = false; state.following = false; return }
-    if (!state.active) { state.position.copy(camera.position); state.active = true }
+    if (!state.active) {
+      // Continue from wherever the fly-in (or a skip of it) left the camera, with its speed and aim.
+      const trip = game.trip.current
+      state.position.copy(camera.position)
+      state.velocity.set(0, 0, 0).add(trip.camVelocity ?? state.velocity)
+      state.lookVelocity.set(0, 0, 0).add(trip.lookVelocity ?? state.lookVelocity)
+      if (trip.lookPoint) state.look.copy(trip.lookPoint)
+      else state.look.copy(camera.position).addScaledVector(camera.getWorldDirection(state.direction), 30)
+      trip.lookPoint = trip.camVelocity = trip.lookVelocity = null
+      state.active = true
+      state.composition = null
+    }
     const c = game.captain.current
     const booth = !game.touch && game.mode === 'island' && insideProjectorBooth(c)
-    if (game.mode !== 'island') {
-      state.desired.set(...worldPosition(16, 12, 53))
-      state.target.set(...worldPosition(c.x, GROUND_Y + 1.2, c.z))
+    if (game.mode === 'disembark') {
+      // The fly-in's last frame: above and behind the ship, the dock leading toward the cinema.
+      state.desired.set(...worldPosition(...DOCK_CAMERA))
+      state.target.set(...worldPosition(...DOCK_LOOK))
+    } else if (game.mode === 'departure') {
+      // Watch the captain walk back, then arc out to sea around the ship and settle behind it as it sails
+      // off, exactly where CameraRig expects to take over. The arc is wide so the pan stays slow.
+      const back = ease((game.trip.current.elapsed - 0.3) / 4.2)
+      const ship = game.ship.current
+      const reach = Math.max(12, 32 * cameraClearFraction(ship.x, ship.z, ship.x, ship.z - 32))
+      state.shipPosition.set(ship.x, 14, ship.z - reach)
+      state.waypoint.set(ship.x + 24, 15, ship.z + 6)
+      state.shipLook.set(ship.x, 4, ship.z + 10 * back) // ahead along the final course, not the spinning bow
+      state.desired.set(...worldPosition(...DOCK_CAMERA))
+      state.desired.multiplyScalar((1 - back) ** 2).addScaledVector(state.waypoint, 2 * (1 - back) * back).addScaledVector(state.shipPosition, back * back)
+      state.target.set(...worldPosition(c.x, GROUND_Y + 1.2, c.z)).lerp(state.shipLook, back)
     } else if (booth) {
       // The booth's walls/roof lift away for this fixed, unobstructed composition.
       state.desired.set(...worldPosition(-3.5, 8, 13))
@@ -51,8 +82,12 @@ export default function IslandCamera({ game }) {
     const following = game.mode === 'island' && !game.touch && !booth && !['playing', 'soon', 'blocked', 'loading'].includes(game.film)
     const composition = game.mode !== 'island' ? 'dock' : game.touch ? 'touch' : booth ? 'booth' : following ? 'follow' : 'film'
     if (!game.touch && state.composition !== composition) state.position.copy(camera.position)
+    if (state.composition !== composition) state.sinceSwitch = 0
     state.composition = composition
-    state.position.lerp(state.desired, game.touch ? touchK : 1 - Math.exp(-delta * 6))
+    state.sinceSwitch += delta
+    // Springs keep the speed when the shot changes, and ease slower for a moment after each change.
+    const slowness = 1 - ease(state.sinceSwitch / 1.6)
+    smoothDampVector(state.position, state.desired, state.velocity, (game.touch ? 0.45 : 0.17) + 0.55 * slowness, delta)
     camera.position.copy(state.position)
     if (following) {
       state.pivot.set(...worldPosition(c.x, GROUND_Y + 2.2, c.z))
@@ -85,7 +120,7 @@ export default function IslandCamera({ game }) {
       camera.position.copy(state.pivot).addScaledVector(state.direction, distance)
     }
     state.following = following
-    state.look.lerp(state.target, game.touch ? touchK : 1 - Math.exp(-delta * 8))
+    smoothDampVector(state.look, state.target, state.lookVelocity, (game.touch ? 0.25 : 0.125) + 0.4 * slowness, delta)
     camera.lookAt(state.look)
   })
   return null
