@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
+import { roomWalkable, ROOM_LANDMARKS } from './room'
 import { LANDMARKS } from './layout'
 import { nearestInteraction, stepCaptain } from './movement'
 
@@ -12,7 +13,7 @@ export default function CaptainController({ game }) {
   const previous = useRef(null)
   const orbit = useRef({ elapsed: 1, freeLook: false, movementYaw: 0 })
   useEffect(() => {
-    if (game.mode !== 'island' || game.touch || game.awardOpen) return
+    if (!['island', 'lighthouse'].includes(game.mode) || game.touch || game.awardOpen || game.viewer) return
     const canvas = gl.domElement
     const reset = () => { keys.current = {}; drag.current.id = null; orbit.current.freeLook = false; orbit.current.elapsed = 1 }
     const down = (event) => {
@@ -64,11 +65,11 @@ export default function CaptainController({ game }) {
       window.removeEventListener('pointerup', endDrag)
       window.removeEventListener('pointercancel', endDrag)
     }
-  }, [game.mode, game.touch, game.awardOpen, gl])
+  }, [game.mode, game.touch, game.awardOpen, game.viewer, gl])
   useFrame((_, delta) => {
-    if (game.mode !== 'island' || game.mode !== game.trip.current.mode || game.touch) { previous.current = null; return }
+    if (!['island', 'lighthouse'].includes(game.mode) || game.mode !== game.trip.current.mode || game.touch) { previous.current = null; return }
     orbit.current.elapsed += Math.min(delta, 0.25)
-    if (!game.awardOpen) {
+    if (!game.awardOpen && !game.viewer) {
       const captain = game.captain.current
       const trip = game.trip.current
       if (keys.current.KeyW && drag.current.id === null && orbit.current.elapsed >= 0.8) {
@@ -76,10 +77,10 @@ export default function CaptainController({ game }) {
         trip.yaw += Math.sign(error) * Math.min(Math.abs(error) * (1 - Math.exp(-delta * 5)), 2.5 * delta)
         if (Math.abs(error) < 0.015) orbit.current.freeLook = false
       }
-      stepCaptain(captain, keys.current, orbit.current.freeLook ? orbit.current.movementYaw : trip.yaw, delta)
+      stepCaptain(captain, keys.current, orbit.current.freeLook ? orbit.current.movementYaw : trip.yaw, delta, game.mode === 'lighthouse' ? roomWalkable : undefined)
     }
     else game.captain.current.moving = false
-    const nearest = nearestInteraction(game.captain.current, LANDMARKS)
+    const nearest = nearestInteraction(game.captain.current, game.mode === 'lighthouse' ? ROOM_LANDMARKS : LANDMARKS)
     if (previous.current !== nearest) {
       previous.current = nearest
       game.setNearby(nearest)

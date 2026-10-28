@@ -12,7 +12,7 @@ export function walkable(x, z) {
   return !WALK_OBSTACLES.some((b) => Math.abs(x - b.x) < b.width / 2 + 0.55 && Math.abs(z - b.z) < b.depth / 2 + 0.55)
 }
 
-export function stepCaptain(captain, keys, yaw, delta) {
+export function stepCaptain(captain, keys, yaw, delta, canWalk = walkable) {
   const sideways = Number(keys.KeyD || false) - Number(keys.KeyA || false)
   const forward = Number(keys.KeyW || false) - Number(keys.KeyS || false)
   const length = Math.hypot(sideways, forward)
@@ -35,8 +35,8 @@ export function stepCaptain(captain, keys, yaw, delta) {
     captain.speed += Math.sign(targetSpeed - oldSpeed) * change
     const distance = (oldSpeed + captain.speed) * 0.5 * FIXED_STEP
     const dx = (captain.moveX ?? 0) * distance, dz = (captain.moveZ ?? -1) * distance
-    if (walkable(captain.x + dx, captain.z)) captain.x += dx
-    if (walkable(captain.x, captain.z + dz)) captain.z += dz
+    if (canWalk(captain.x + dx, captain.z)) captain.x += dx
+    if (canWalk(captain.x, captain.z + dz)) captain.z += dz
     if (length) {
       const desired = Math.atan2(-captain.moveX, -captain.moveZ)
       const error = Math.atan2(Math.sin(desired - captain.heading), Math.cos(desired - captain.heading))

@@ -26,6 +26,7 @@ Names are case-sensitive except animation clips. Keep them unique. Objects may b
 - Placeholder hull is about **4.4 wide × 11.2 long**, with mast/flag top near **Y = 10.4**. Keep these dimensions so shoreline clearance and the dock fit.
 - Put `sail_main`'s pivot at its top edge on the yard (currently **[0, 8.5, −0.9]**). The cloth extends downward. Its local Y scale controls furling and preserves the exported full-sail scale.
 - `wheel` turns around its local **Z axis**, with zero rotation as the neutral pose. `flag` sways around local **Y**. Apply fixed mounting rotations on parent objects.
+- During the arrival reveal, named `mast`, `yard`, `sail_main` and `flag` parts temporarily hide to keep rigging out of the island view while preserving the shared fly-in path. They return on docking.
 - The loader sits inside the existing wave-riding group. Do not bake world position or wave motion into the export.
 
 ## Film Island
@@ -39,9 +40,11 @@ Names are case-sensitive except animation clips. Keep them unique. Objects may b
 - Lighthouse centre: **[22, 3.2, −8]**, door faces +Z; interaction point **[22, 3.2, −3.5]**.
 - Building footprints, seats, booth walls, camera stops and collision bounds live together in `src/world/film/layout.js`. Match that layout when replacing the scene. If the final art moves a building or landmark, update that file at the same time; collision is deliberately simple and does not derive from arbitrary mesh triangles.
 
+The lighthouse door leads to a separate walkable trophy-room set. Its frame positions and room bounds are generated in `src/world/film/room.js`; images and captions come from `src/config/lighthouse.js`. The interior stays procedural when replacing the exterior island GLB.
+
 ## Film file
 
-Place the final video at **`public/videos/qile-ki-kasak.mp4`**, preferably H.264 video and AAC audio in a 16:9 MP4. Playback starts muted, with an Enable sound button. Stop film pauses playback; Play starts it again. Missing or unreadable video shows the painted “Film coming soon” card.
+Place The Director introduction video at **`public/videos/director-intro.mp4`**, preferably H.264 video and AAC audio in a 16:9 MP4. Playback starts muted, with an Enable sound button. Play/Pause resumes at the same time; Replay starts over; Stop film restores the poster and returns to exploration. Missing or unreadable video shows the painted “Coming soon” card. Qile Ki Kasak is linked externally from the end card. Poster, links and lighthouse content: `docs/FILM_CONTENT.md`.
 
 ## Verified in this prototype
 

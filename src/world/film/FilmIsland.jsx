@@ -1,12 +1,31 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
+import * as THREE from 'three'
+import LighthouseRoom from './LighthouseRoom'
 import { useFrame } from '@react-three/fiber'
-import { FILM_ISLAND as FILM_PALETTE } from '../../config/palette'
+import { ISLAND_PALETTES } from '../../config/palette'
 import { useOptionalModel } from '../useOptionalModel'
 import Interactable from '../Interactable'
 import { BUILDINGS, FILM_ISLAND, GROUND_Y, LANDMARKS, insideProjectorBooth } from './layout'
 import { useToonPalette } from './materials'
 import { Block, Reel } from './Primitives'
 import FilmScreen from './FilmScreen'
+
+const FILM_PALETTE = ISLAND_PALETTES.film.land
+
+function ReelLabel() {
+  const texture = useMemo(() => {
+    const canvas = document.createElement('canvas'); canvas.width = 512; canvas.height = 112
+    const ctx = canvas.getContext('2d')
+    ctx.fillStyle = FILM_PALETTE.walls; ctx.fillRect(0, 0, 512, 112)
+    ctx.strokeStyle = FILM_PALETTE.wood; ctx.lineWidth = 8; ctx.strokeRect(4, 4, 504, 104)
+    ctx.fillStyle = FILM_PALETTE.trim; ctx.font = 'bold 54px Georgia'; ctx.textAlign = 'center'
+    ctx.fillText('The Director', 256, 75)
+    const map = new THREE.CanvasTexture(canvas); map.colorSpace = THREE.SRGBColorSpace
+    return map
+  }, [])
+  useEffect(() => () => texture.dispose(), [texture])
+  return <mesh name="reel_label" position={[0, 3.55, 0.1]}><planeGeometry args={[3.6, 0.79]} /><meshBasicMaterial map={texture} toneMapped={false} /></mesh>
+}
 
 function Building({ building: b, materials: m }) {
   return <group position={[b.x, GROUND_Y, b.z]}>
@@ -79,6 +98,8 @@ function Placeholder({ m, reel, game }) {
     </group>
     <group name="reel_rack" position={[-8, GROUND_Y, 8]}>
       <Block position-y={1} scale={[3.5, 2, 0.8]} material={m.trim} />
+      <ReelLabel />
+      {[-1.6, 1.6].map((x) => <Block key={x} position={[x, 2.75, 0]} scale={[0.12, 1.5, 0.12]} material={m.wood} />)}
       <Block position={[0, 2, 0]} scale={[3.8, 0.18, 1]} material={m.wood} />
       {reel === 'rack' && <Reel name="reel" position={[0, 2.5, 0]} scale={1.3} material={m.accent} />}
     </group>
@@ -122,6 +143,7 @@ export default function FilmIsland({ game }) {
   }}>
     {model ? <primitive object={model.scene} /> : <Placeholder m={materials} reel={game.reel} game={game} />}
     <FilmScreen game={game} model={model} />
+    {game.mode === 'lighthouse' && <LighthouseRoom game={game} />}
     {game.mode === 'island' && LANDMARKS.map((landmark) => <Interactable key={landmark.id}
       landmark={landmark} model={model} highlighted={(game.touch ? game.focus : game.nearby) === landmark.id}
       touch={game.touch} objective={!game.touch && game.objective.landmark === landmark.id} onSelect={game.setFocus} />)}

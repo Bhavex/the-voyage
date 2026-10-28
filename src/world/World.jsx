@@ -18,7 +18,7 @@ import FilmBearing from './film/FilmBearing'
 
 export default function World({ game }) {
   const { mode, ship, touch } = game
-  const visiting = ['disembark', 'island', 'departure'].includes(mode)
+  const visiting = ['disembark', 'island', 'departure', 'lighthouse'].includes(mode)
   return (
     <Canvas
       dpr={touch ? 1 : [1, 2]}
@@ -33,7 +33,7 @@ export default function World({ game }) {
       <FollowingOcean ship={ship} segments={touch ? 192 : 384} />
       <Islands />
       <FilmIslandPresence game={game} />
-      <Ship ship={ship} active={mode !== 'intro'} canSteer={mode === 'sailing'} />
+      <Ship ship={ship} active={mode !== 'intro'} canSteer={mode === 'sailing'} arrivalCutaway={mode === 'arrival'} />
       {visiting && <Mooring game={game} />}
       {visiting && !touch && <Captain game={game} />}
       <CameraRig view={mode === 'sailing' ? 'deck' : mode} ship={ship} />

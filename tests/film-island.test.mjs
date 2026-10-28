@@ -82,6 +82,6 @@ test('spawn does not offer Set sail and objectives progress through the reel, fi
   assert.equal(nearestInteraction(createCaptain(), LANDMARKS), null)
   assert.equal(filmObjective('rack', 'idle', false).text, 'Find the film reel')
   assert.equal(filmObjective('carrying', 'idle', false).text, 'Take the reel to the projector booth')
-  assert.equal(filmObjective('loaded', 'playing', true).text, 'Watch Qile Ki Kasak')
+  assert.equal(filmObjective('loaded', 'playing', true).text, 'Watch The Director')
   assert.equal(filmObjective('loaded', 'stopped', true).text, 'Visit the lighthouse')
 })

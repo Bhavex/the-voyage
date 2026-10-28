@@ -186,3 +186,47 @@ body { background: #fbe9cf; color: var(--paper); font-family: var(--font-ui); ov
 .film-bearing-arrow { display: inline-block; margin-right: 0.4rem; color: var(--sun); }
 
 .inventory-note-desktop { top: 9.5rem; }
+
+/* Cinema cards sit on the actual screen; frame buttons sit on the room walls. */
+.cinema-end-card {
+  width: 640px; height: 360px; background: var(--film-walls); color: var(--film-trim);
+  border: 2px solid var(--film-wood); outline: 8px solid var(--film-walls); text-align: center;
+  padding: 22px 24px; font-family: var(--font-title);
+}
+.cinema-end-card .eyebrow { margin: 2px 0 10px; font: 12px var(--font-ui); letter-spacing: 0.2em; text-transform: uppercase; }
+.cinema-end-card h2 { font-size: 46px; line-height: 1.15; margin: 8px 0 12px; }
+.cinema-honour { font-size: 18px; margin: 0 0 24px; }
+.cinema-watch { display: inline-block; color: var(--film-walls); background: var(--film-trim); padding: 14px 24px; text-decoration: none; font: 700 17px var(--font-ui); }
+.cinema-end-card nav { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 24px; }
+.cinema-end-card nav a { color: var(--film-trim); font: 700 14px var(--font-ui); text-underline-offset: 4px; padding: 8px 3px; }
+.cinema-end-card a:focus-visible { outline: 4px solid var(--film-accent); outline-offset: 4px; }
+.lighthouse-frame { width: 340px; height: 265px; padding: 12px; border: 0; color: var(--film-trim); background: var(--film-walls); cursor: zoom-in; }
+.lighthouse-frame img { display: block; width: 100%; height: 180px; object-fit: contain; }
+.lighthouse-frame span { display: block; font: 700 16px var(--font-title); padding-top: 10px; }
+.room-award { display: flex; flex-direction: column; justify-content: center; gap: 18px; width: 400px; height: 340px; border: 0; color: var(--film-walls); background: var(--film-trim); padding: 25px; cursor: pointer; font: 22px var(--font-title); }
+.room-award strong { font-size: 42px; }
+.room-award small { font: 16px var(--font-ui); }
+.room-actions { position: absolute; top: 1.5rem; right: 1.5rem; display: flex; gap: 0.5rem; }
+.room-actions button, .room-catalogue button, .image-viewer button { background: var(--paper); color: var(--ink); border: 0; border-radius: 0.3rem; padding: 0.7rem 1rem; min-height: 44px; font: 700 0.9rem var(--font-ui); cursor: pointer; }
+.room-catalogue { position: absolute; bottom: 1rem; left: 1rem; right: 1rem; display: flex; gap: 0.5rem; overflow-x: auto; padding: 0.5rem; background: var(--ink); border-radius: 0.5rem; }
+.room-catalogue button { flex-shrink: 0; }
+.image-viewer { width: min(64rem, calc(100% - 2rem)); max-height: calc(100dvh - 2rem); padding: 1.5rem; border: 1px solid var(--paper-dim); border-radius: 0.5rem; background: var(--ink); color: var(--paper); }
+.image-viewer::backdrop { background: var(--shadow); backdrop-filter: blur(6px); }
+.image-viewer > img { display: block; width: 100%; height: min(58dvh, 42rem); object-fit: contain; }
+.image-viewer h2 { font: 700 1.5rem var(--font-title); margin: 1rem 0 0.5rem; }
+.image-viewer p { margin: 0.5rem 0 1rem; }
+.viewer-top, .image-viewer nav { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+.image-viewer nav { margin-bottom: 0; }
+.room-actions button:focus-visible, .room-catalogue button:focus-visible, .image-viewer button:focus-visible, .lighthouse-frame:focus-visible, .room-award:focus-visible { outline: 3px solid var(--sun); outline-offset: 4px; }
+@media (max-width: 600px) {
+  .room-actions { top: 8rem; left: 1rem; right: auto; }
+  .image-viewer { padding: 1rem; }
+  .image-viewer > img { height: 48dvh; }
+  .arrival-card-corner { left: 1rem; right: 1rem; top: 1rem; }
+  .film-controls { font-size: 0.75rem; gap: 0.4rem; }
+}
+
+.lighthouse-frame small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 12px var(--font-ui); margin-top: 6px; }
+
+.island-heading, .room-actions, .room-catalogue, .film-controls, .interaction-prompt, .walking-hint, .inventory-note, .island-message, .arrival-card, .phase-note { z-index: 30; }
+.sound-invitation { z-index: 40; }

@@ -3,6 +3,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { cameraClearFraction } from '../shorelines'
 import { BUILDINGS, DOCK_CAMERA, DOCK_LOOK, GROUND_Y, LANDMARKS, insideProjectorBooth, worldPosition } from './layout'
+import { ROOM } from './room'
 import { smoothDampVector } from './flight'
 
 const ease = (t) => { const x = Math.min(1, Math.max(0, t)); return x * x * (3 - 2 * x) }
@@ -29,7 +30,7 @@ export default function IslandCamera({ game }) {
   ) })), [])
   useFrame((_, frameDelta) => {
     const delta = Math.min(frameDelta, 0.05)
-    const active = ['disembark', 'island', 'departure'].includes(game.mode)
+    const active = ['disembark', 'island', 'departure', 'lighthouse'].includes(game.mode)
     if (!active) { state.active = false; state.following = false; return }
     if (!state.active) {
       // Continue from wherever the fly-in (or a skip of it) left the camera, with its speed and aim.
@@ -44,8 +45,25 @@ export default function IslandCamera({ game }) {
       state.composition = null
     }
     const c = game.captain.current
-    const booth = !game.touch && game.mode === 'island' && insideProjectorBooth(c)
-    if (game.mode === 'disembark') {
+    const booth = !game.touch && game.mode === 'island' && !['playing', 'paused', 'ended', 'soon', 'blocked', 'loading'].includes(game.film) && insideProjectorBooth(c)
+    if (game.mode === 'lighthouse') {
+      const yaw = game.trip.current.yaw
+      if (game.touch) {
+        state.desired.set(...worldPosition(ROOM.x + 1, 7.8, 5.1))
+        state.target.set(...worldPosition(ROOM.x - 0.8, 6.1, -3))
+      } else {
+        state.desired.set(...worldPosition(
+          THREE.MathUtils.clamp(c.x + Math.sin(yaw) * 4.5, ROOM.x - 6.2, ROOM.x + 6.2),
+          GROUND_Y + 3.5,
+          THREE.MathUtils.clamp(c.z + Math.cos(yaw) * 4.5, -5.2, 5.2)))
+        state.target.set(...worldPosition(c.x - Math.sin(yaw) * 3, GROUND_Y + 2.2 + game.trip.current.pitch * 5, c.z - Math.cos(yaw) * 3))
+      }
+      // An interior doorway is a cut between sets; never fly through the sea or walls.
+      if (state.composition !== 'room') {
+        state.position.copy(state.desired); state.look.copy(state.target)
+        state.velocity.set(0, 0, 0); state.lookVelocity.set(0, 0, 0)
+      }
+    } else if (game.mode === 'disembark') {
       // The fly-in's last frame: above and behind the ship, the dock leading toward the cinema.
       state.desired.set(...worldPosition(...DOCK_CAMERA))
       state.target.set(...worldPosition(...DOCK_LOOK))
@@ -65,7 +83,7 @@ export default function IslandCamera({ game }) {
       // The booth's walls/roof lift away for this fixed, unobstructed composition.
       state.desired.set(...worldPosition(-3.5, 8, 13))
       state.target.set(...worldPosition(4, 5.4, -5))
-    } else if (game.touch || ['playing', 'soon', 'blocked', 'loading'].includes(game.film)) {
+    } else if (game.touch || ['playing', 'paused', 'ended', 'soon', 'blocked', 'loading'].includes(game.film)) {
       const landmark = LANDMARKS.find((item) => item.id === (game.touch ? game.focus : 'projector')) ?? LANDMARKS[3]
       state.desired.set(...worldPosition(...landmark.camera))
       state.target.set(...worldPosition(landmark.position[0], landmark.id === 'lighthouse' ? 12 : landmark.id === 'projector' ? 8.4 : 5.5, landmark.id === 'projector' ? -19.5 : landmark.position[2]))
@@ -75,13 +93,16 @@ export default function IslandCamera({ game }) {
       state.target.set(...worldPosition(c.x - Math.sin(yaw) * 3, GROUND_Y + 2.2, c.z - Math.cos(yaw) * 3))
     }
     const touchK = 1 - Math.exp(-delta * 4)
-    const fov = game.touch && game.focus === 'projector' && game.mode === 'island'
+    const fov = game.mode === 'lighthouse' ? (game.touch ? 85 : 60) : game.touch && game.focus === 'projector' && game.mode === 'island'
       ? Math.max(45, THREE.MathUtils.radToDeg(2 * Math.atan(8 / (19 * camera.aspect)))) : 45
     camera.fov = THREE.MathUtils.lerp(camera.fov, fov, touchK)
     camera.updateProjectionMatrix()
-    const following = game.mode === 'island' && !game.touch && !booth && !['playing', 'soon', 'blocked', 'loading'].includes(game.film)
-    const composition = game.mode !== 'island' ? 'dock' : game.touch ? 'touch' : booth ? 'booth' : following ? 'follow' : 'film'
-    if (!game.touch && state.composition !== composition) state.position.copy(camera.position)
+    const following = game.mode === 'island' && !game.touch && !booth && !['playing', 'paused', 'ended', 'soon', 'blocked', 'loading'].includes(game.film)
+    const composition = game.mode === 'lighthouse' ? 'room' : game.mode !== 'island' ? 'dock' : game.touch ? 'touch' : booth ? 'booth' : following ? 'follow' : 'film'
+    if (state.composition === 'room' && composition !== 'room') {
+      state.position.copy(state.desired); state.look.copy(state.target)
+      state.velocity.set(0, 0, 0); state.lookVelocity.set(0, 0, 0)
+    } else if (!game.touch && composition !== 'room' && state.composition !== composition) state.position.copy(camera.position)
     if (state.composition !== composition) state.sinceSwitch = 0
     state.composition = composition
     state.sinceSwitch += delta

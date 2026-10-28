@@ -38,6 +38,12 @@ Who: **Claude** (design, look, shaders, review), **Codex** (big builds, systems)
 - [x] Film land palette, grass/path details, unobstructed corner arrival title, guarded arrival skipping and a sailing direction/distance marker (Codex).
 - Feel-pass verification: lint, production build and 15 tests pass, including 20/60 fps movement parity and steering-key skip regression. Desktop/phone browser journeys, camera drag/recovery, booth framing, objective progression and real-video sound controls checked; spawn/rack/projector/lighthouse screenshots captured. Intro, sailing physics, touch navigation/camera and sea shaders are unchanged; only the explicitly requested Film Island palette was added.
 
+- [x] Main/look-pass integration: Film land colours now live in `ISLAND_PALETTES.film.land`; Claude’s sea/sky blend and continuous fly-in path are retained. Corner arrival title, held-key clearing and guarded deliberate skipping remain; a temporary named-rigging cutaway keeps the mast out of the arrival reveal (Codex).
+- [x] The Director cinema: one labelled reel, island-only MP4 requests, poster/coming-soon fallback, play/pause/replay/stop and an in-world end card with configurable YouTube/profile links (Codex).
+- [x] Walkable lighthouse trophy room: configured certificate/photo frames, captions, full-size keyboard/touch gallery viewer, award story and return door; phone taps keep the lighter navigation path (Codex).
+- Content setup: `docs/FILM_CONTENT.md` lists the video, poster, image folders and editable links/captions. Qile Ki Kasak is now an external link, not an embedded film; these changes supersede the earlier prototype playback/award-panel notes.
+- Verified after integrating main: lint, production build and all 30 tests pass. Desktop and phone browser journeys cover arrival guards, reel loading, missing video, real H.264 playback/pause/replay/end card, link tabs, room collision, image navigation, award story and returning to sea. Five requested screenshots captured. Wave settings, Ocean/Sky shader code, `lookBlend.js` and Claude’s `flight.js` are unchanged from main. Test videos remain outside Git.
+
 ## Week 4: Systems
 - [ ] Sea chart and quick travel (Codex)
 - [ ] Loading cinematic and asset compression (Codex)

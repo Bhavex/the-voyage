@@ -1,14 +1,13 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { LANDMARKS } from '../world/film/layout'
 
 function actionFor(id, game) {
   if (id === 'rack' && game.reel !== 'rack') return null
-  if (id === 'projector') return ['playing', 'soon', 'loading'].includes(game.film) ? (game.touch ? 'Stop' : 'Stop film') : game.touch ? 'Play' : game.reel === 'loaded' ? 'Play film' : 'Load reel and play'
+  if (id === 'projector') return ['playing', 'paused', 'ended', 'soon', 'blocked', 'loading'].includes(game.film) ? (game.touch ? 'Stop' : 'Stop film') : game.touch ? 'Play' : game.reel === 'loaded' ? 'Play film' : 'Load reel and play'
   return LANDMARKS.find((landmark) => landmark.id === id)?.[game.touch ? 'action' : 'prompt']
 }
 
 export default function IslandOverlay({ game }) {
-  const dialog = useRef()
   const [sound, setSound] = useState(false)
   const [soundInvitation, setSoundInvitation] = useState(false)
   useEffect(() => {
@@ -19,10 +18,6 @@ export default function IslandOverlay({ game }) {
   }, [game.touch, game.film, game.videoRef])
   const id = game.touch ? game.focus : game.nearby
   const action = actionFor(id, game)
-  useEffect(() => {
-    if (game.awardOpen) dialog.current.showModal()
-    else if (dialog.current.open) dialog.current.close()
-  }, [game.awardOpen])
   const toggleSound = () => {
     if (!game.videoRef.current) return
     game.videoRef.current.muted = sound
@@ -34,7 +29,7 @@ export default function IslandOverlay({ game }) {
       <span className="film-bearing-arrow" aria-hidden="true">↑</span><span>Film Island</span>
     </div>}
     {game.mode === 'sailing' && game.touch && <button className="visit-island btn-primary" onClick={() => game.changeMode('arrival')}>Visit Film Island</button>}
-    {game.mode === 'arrival' && <div className={`arrival-card ${game.touch ? '' : 'arrival-card-corner'}`}>
+    {game.mode === 'arrival' && <div className="arrival-card arrival-card-corner">
       <p className="eyebrow">A story on the shore</p>
       <h2 className="arrival-title">Film Island</h2>
       <p>Home of Qile Ki Kasak</p>
@@ -50,24 +45,18 @@ export default function IslandOverlay({ game }) {
       {action && !game.awardOpen && <button className="interaction-prompt" onClick={() => game.interact(id)}>
         {!game.touch && <><kbd>E</kbd> –</>} {action}
       </button>}
-      {game.reel === 'carrying' && <p className={`inventory-note ${game.touch ? '' : 'inventory-note-desktop'}`}>Carrying a film reel</p>}
+      {game.reel === 'carrying' && <p className={`inventory-note ${game.touch ? '' : 'inventory-note-desktop'}`}>Carrying The Director</p>}
       {game.message && <p className="island-message" role="status">{game.message}</p>}
       {soundInvitation && <button className="sound-invitation btn-primary" onClick={toggleSound}>Turn on sound</button>}
-      {['playing', 'soon', 'loading', 'blocked'].includes(game.film) && <div className="film-controls">
-        <span>Qile Ki Kasak</span>
-        {game.film === 'playing' && <button onClick={toggleSound}>{sound ? 'Mute' : game.touch ? 'Enable sound' : 'Turn on sound'}</button>}
-        {game.film === 'blocked' && <button onClick={() => game.videoRef.current?.play().then(() => game.setFilm('playing')).catch(() => {})}>Play film</button>}
+      {['playing', 'paused', 'ended', 'soon', 'loading', 'blocked'].includes(game.film) && <div className="film-controls">
+        <span>The Director</span>
+        {['playing', 'paused'].includes(game.film) && <button onClick={toggleSound}>{sound ? 'Mute' : game.touch ? 'Enable sound' : 'Turn on sound'}</button>}
+        {game.film === 'playing' && <button onClick={() => game.setFilm('paused')}>Pause</button>}
+        {['paused', 'blocked'].includes(game.film) && <button onClick={() => game.videoRef.current?.play().then(() => game.setFilm('playing')).catch(() => game.setFilm('blocked'))}>Play</button>}
+        {['playing', 'paused', 'ended', 'blocked'].includes(game.film) && <button onClick={game.playFilm}>Replay</button>}
         <button onClick={() => game.setFilm('stopped')}>Stop film</button>
       </div>}
     </>}
-    <dialog ref={dialog} className="award-panel" aria-labelledby="award-title" onCancel={(event) => { event.preventDefault(); game.setAwardOpen(false) }}>
-      <p className="eyebrow">From the lighthouse</p>
-      <h2 id="award-title">Qile Ki Kasak</h2>
-      <p className="award-honour">Overall Best Film</p>
-      <p>INTACH Filmit India</p>
-      <p className="award-story">Qile Ki Kasak — Overall Best Film, INTACH Filmit India</p>
-      <p>Bhavishya’s film received the Overall Best Film award at the national INTACH Filmit India awards. The lighthouse celebrates this chapter of his filmmaking journey.</p>
-      <button className="btn-primary" onClick={() => game.setAwardOpen(false)}>Back to the island</button>
-    </dialog>
+
   </>
 }

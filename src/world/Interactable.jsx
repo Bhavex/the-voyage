@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import { OPEN_SEA, FILM_ISLAND } from '../config/palette'
+import { OPEN_SEA, ISLAND_PALETTES } from '../config/palette'
 
 // Shared proximity/tap marker: any island can supply a landmark and an action.
 export default function Interactable({ landmark, model, highlighted, touch, objective = false, onSelect }) {
@@ -39,11 +39,11 @@ export default function Interactable({ landmark, model, highlighted, touch, obje
     {objective && <group ref={marker} name={`objective_${landmark.id}`} position-y={landmark.markerHeight} renderOrder={1000}>
       <mesh rotation-z={Math.PI} renderOrder={1000}>
         <coneGeometry args={[0.42, 0.85, 4]} />
-        <meshBasicMaterial color={FILM_ISLAND.accent} depthTest={false} depthWrite={false} toneMapped={false} />
+        <meshBasicMaterial color={ISLAND_PALETTES.film.land.accent} depthTest={false} depthWrite={false} toneMapped={false} />
       </mesh>
       <mesh position-y={0.9} renderOrder={1000}>
         <sphereGeometry args={[0.18, 16, 12]} />
-        <meshBasicMaterial color={FILM_ISLAND.walls} depthTest={false} depthWrite={false} toneMapped={false} />
+        <meshBasicMaterial color={ISLAND_PALETTES.film.land.walls} depthTest={false} depthWrite={false} toneMapped={false} />
       </mesh>
     </group>}
     <mesh ref={glow} rotation-x={-Math.PI / 2} position-y={0.08}>

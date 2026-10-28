@@ -17,9 +17,9 @@ export const BUILDINGS = [
   { x: 19, z: 10, width: 8, depth: 7, height: 6, roof: 'teal' },
 ]
 export const LANDMARKS = [
-  { id: 'rack', target: 'reel', name: 'Film reels', action: 'Pick up', prompt: 'Pick up film reel', markerHeight: 5, position: [-8, GROUND_Y, 8], radius: 3.4, camera: [-15, 9, 17] },
+  { id: 'rack', target: 'reel', name: 'The Director', action: 'Pick up', prompt: 'Pick up film reel', markerHeight: 5, position: [-8, GROUND_Y, 8], radius: 3.4, camera: [-15, 9, 17] },
   { id: 'projector', target: 'projector', name: 'Open-air cinema', action: 'Play', prompt: 'Load reel and play', markerHeight: 6.6, position: [4, GROUND_Y, 1.5], radius: 3.5, camera: [4, 10, -0.5] },
-  { id: 'lighthouse', target: 'lighthouse_door', name: 'Lighthouse', action: 'Read', prompt: 'Read the award', markerHeight: 5.5, position: [22, GROUND_Y, -3.5], radius: 3.8, camera: [33, 15, 7] },
+  { id: 'lighthouse', target: 'lighthouse_door', name: 'Lighthouse', action: 'Enter', prompt: 'Enter the lighthouse', markerHeight: 5.5, position: [22, GROUND_Y, -3.5], radius: 3.8, camera: [33, 15, 7] },
   { id: 'dock', target: 'dock', name: 'The dock', action: 'Set sail', prompt: 'Set sail', markerHeight: 4, position: [0, GROUND_Y, 38], radius: 3.6, camera: [16, 12, 53] },
 ]
 

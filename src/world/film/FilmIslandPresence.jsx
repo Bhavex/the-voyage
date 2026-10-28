@@ -1,7 +1,9 @@
 import { lazy, Suspense, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { FILM_ISLAND as FILM_PALETTE } from '../../config/palette'
+import { ISLAND_PALETTES } from '../../config/palette'
 import { FILM_ISLAND } from './layout'
+
+const FILM_PALETTE = ISLAND_PALETTES.film.land
 
 const FilmIsland = lazy(() => import('./FilmIsland'))
 function DistantFilm() {

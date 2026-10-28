@@ -16,19 +16,6 @@ export const OPEN_SEA = {
   fog: '#f3dfc6',
 }
 
-// Land-only Film Island colours. Open sea, sky and wave shading remain unchanged.
-export const FILM_ISLAND = {
-  sand: '#e2b97f',
-  grass: '#8db86b',
-  path: '#cfae86',
-  walls: '#f1e6d6',
-  terracotta: '#c4683f',
-  teal: '#3f7f86',
-  wood: '#8a5b3c',
-  trim: '#203b45',
-  accent: '#f2a93b',
-}
-
 // One palette per island, same keys as OPEN_SEA, so the sea, sky, fog and light can blend toward the
 // nearest island (see src/world/lookBlend.js). `fogScale` stretches the haze distance (below 1 is
 // thicker) and `light` scales the scene lights. `land` colours the island rock: the low shore, the
@@ -50,7 +37,11 @@ export const ISLAND_PALETTES = {
     fog: '#f6cf9c',
     fogScale: 1,
     light: 1,
-    land: { shore: FILM_ISLAND.sand, hill: '#5a7036', hillHigh: '#b6502e' },
+    land: {
+      shore: '#e2b97f', hill: '#5a7036', hillHigh: '#b6502e',
+      sand: '#e2b97f', grass: '#8db86b', path: '#cfae86', walls: '#f1e6d6',
+      terracotta: '#c4683f', teal: '#3f7f86', wood: '#8a5b3c', trim: '#203b45', accent: '#f2a93b',
+    },
   },
   forge: {
     skyZenith: '#2a1f3d',

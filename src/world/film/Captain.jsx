@@ -2,10 +2,12 @@ import { useEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useOptionalModel } from '../useOptionalModel'
-import { FILM_ISLAND as FILM_PALETTE } from '../../config/palette'
+import { ISLAND_PALETTES } from '../../config/palette'
 import { FILM_ISLAND, GROUND_Y } from './layout'
 import { useToonPalette } from './materials'
 import { Block, Reel } from './Primitives'
+
+const FILM_PALETTE = ISLAND_PALETTES.film.land
 
 export default function Captain({ game }) {
   const root = useRef()
@@ -21,7 +23,7 @@ export default function Captain({ game }) {
   useFrame((_, delta) => {
     const captain = game.captain.current
     root.current.visible = game.mode !== 'departure' || game.trip.current.elapsed < 2
-    const height = game.mode === 'island' ? GROUND_Y : THREE.MathUtils.lerp(game.ship.current.y + 1.4, GROUND_Y, THREE.MathUtils.clamp(1 - captain.x / 8, 0, 1))
+    const height = ['island', 'lighthouse'].includes(game.mode) ? GROUND_Y : THREE.MathUtils.lerp(game.ship.current.y + 1.4, GROUND_Y, THREE.MathUtils.clamp(1 - captain.x / 8, 0, 1))
     root.current.position.set(FILM_ISLAND.position[0] + captain.x, height, FILM_ISLAND.position[1] + captain.z)
     root.current.rotation.y = captain.heading
     const motion = captain.moving ? (captain.running ? 'run' : 'walk') : 'idle'

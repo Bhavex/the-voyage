@@ -58,7 +58,7 @@ function sailGeometry() {
   return g
 }
 
-export default function Ship({ ship, active, canSteer = active }) {
+export default function Ship({ ship, active, canSteer = active, arrivalCutaway = false }) {
   const group = useRef()
   const riding = useRef()
   const sail = useRef()
@@ -74,6 +74,15 @@ export default function Ship({ ship, active, canSteer = active }) {
     flag.current = model.scene.getObjectByName('flag')
     sailRest.current = sail.current.scale.y
   }, [model])
+
+  useEffect(() => {
+    if (!arrivalCutaway) return
+    // Preserve the shared flight path while keeping foreground rigging out of the island reveal.
+    const parts = ['mast', 'yard', 'sail_main', 'flag'].map((name) => riding.current.getObjectByName(name)).filter(Boolean)
+    const visibility = parts.map((part) => part.visible)
+    parts.forEach((part) => { part.visible = false })
+    return () => parts.forEach((part, index) => { part.visible = visibility[index] })
+  }, [arrivalCutaway, model])
 
   const geo = useMemo(() => ({ hull: hullGeometry(), sail: sailGeometry() }), [])
 

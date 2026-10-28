@@ -51,8 +51,8 @@ invalid, the code version stays.
   and camera stops live in src/world/film/layout.js and must be updated if the art moves them.
 - src/world/Islands.jsx draws the other six islands as plain rock shapes coloured from their palette in
   palette.js. Each is replaced by its own scene when that island is built.
-- The Film video is not in the repo. Put it at `public/videos/qile-ki-kasak.mp4`; until then a painted
-  "Film coming soon" card plays on the screen.
+- The Film video is not in the repo. Put it at `public/videos/director-intro.mp4`; until then a painted
+  "Coming soon" card plays on the screen. Qile Ki Kasak is an external YouTube link in src/config/links.js.
 - Camera: CameraRig.jsx is the intro and open-sea follow camera. IslandDirector.jsx (arrival, docking,
   departure path) and IslandCamera.jsx (walking, booth and landmark views) are the island cameras.
 - Sea and sky colours blend per island through src/world/lookBlend.js, using the palettes in palette.js.
@@ -61,7 +61,7 @@ invalid, the code version stays.
 ## Large files
 Videos in public/videos are NOT committed (`public/videos/*.mp4` is in .gitignore). Keep them on your
 own machine, never `git add -f` them, and never put videos in other folders of the repo. Share them
-outside git (drive link, release asset or hosting). Keep only `.gitkeep` in that folder.
+outside git (drive link, release asset or hosting). Keep only `.gitkeep` in that folder. Film content setup is documented in docs/FILM_CONTENT.md.
 
 ## Working together (Codex + Claude)
 - One agent per branch. Name branches by task: `codex/sailing`, `claude/ocean-look`.

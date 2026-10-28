@@ -1,8 +1,10 @@
 import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { OPEN_SEA, FILM_ISLAND as FILM_PALETTE } from '../../config/palette'
+import { OPEN_SEA, ISLAND_PALETTES } from '../../config/palette'
 import { FILM_ISLAND, worldPosition } from './layout'
+
+const FILM_PALETTE = ISLAND_PALETTES.film.land
 
 export default function Mooring({ game }) {
   const { ship } = game

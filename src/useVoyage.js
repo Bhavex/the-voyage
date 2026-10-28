@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { createSailingState } from './world/sailing'
 import { filmObjective } from './world/film/objectives'
 import { createCaptain } from './world/film/movement'
+import { ROOM_SPAWN } from './world/film/room'
 
 export default function useVoyage() {
   const [mode, setMode] = useState('intro')
@@ -18,8 +19,9 @@ export default function useVoyage() {
   const [film, setFilm] = useState('idle')
   const [playRequest, setPlayRequest] = useState(0)
   const [awardOpen, setAwardOpen] = useState(false)
+  const [viewer, setViewer] = useState(null)
   const [watched, setWatched] = useState(false)
-  useEffect(() => { if (film === 'playing' || film === 'soon') setWatched(true) }, [film])
+  useEffect(() => { if (['playing', 'soon', 'ended'].includes(film)) setWatched(true) }, [film])
   const objective = filmObjective(reel, film, watched)
   const [message, setMessage] = useState('')
   useEffect(() => {
@@ -34,30 +36,45 @@ export default function useVoyage() {
     setMode(next)
     if (next === 'arrival') setFocus('dock')
     if (next === 'departure') {
-      setReel('rack')
-      setWatched(false)
-      setFilm('idle')
-      setAwardOpen(false)
-      setFocus('dock')
+      setReel('rack'); setWatched(false); setFilm('idle'); setAwardOpen(false); setViewer(null); setFocus('dock')
     }
   }, [])
+  const leaveRoom = useCallback(() => {
+    Object.assign(captain.current, createCaptain(), { x: 22, z: -1.8, heading: Math.PI })
+    trip.current.yaw = Math.PI
+    trip.current.pitch = 0
+    setAwardOpen(false); setViewer(null)
+    setFocus('lighthouse')
+    changeMode('island')
+  }, [changeMode])
+  const playFilm = useCallback(() => {
+    setMessage(''); setFilm('loading'); setPlayRequest((request) => request + 1)
+  }, [])
   const interact = useCallback((id) => {
-    if (mode !== 'island' || awardOpen) return
+    if (awardOpen || viewer) return
+    if (mode === 'lighthouse') {
+      if (id === 'room-exit') leaveRoom()
+      if (id === 'award') setAwardOpen(true)
+      return
+    }
+    if (mode !== 'island') return
     if (id === 'dock') changeMode('departure')
-    if (id === 'lighthouse') setAwardOpen(true)
+    if (id === 'lighthouse') {
+      setFilm((current) => current === 'idle' ? current : 'stopped')
+      Object.assign(captain.current, createCaptain(), ROOM_SPAWN)
+      trip.current.yaw = 0; trip.current.pitch = 0
+      changeMode('lighthouse')
+    }
     if (id === 'rack') {
-      if (reel === 'rack') { setReel('carrying'); setMessage('Reel picked up. Take it to the projector.') }
-      else setMessage(reel === 'carrying' ? 'You are carrying the reel.' : 'The reel is in the projector.')
+      if (reel === 'rack') { setReel('carrying'); setMessage('The Director picked up. Take it to the projector.') }
+      else setMessage(reel === 'carrying' ? 'You are carrying The Director.' : 'The Director is in the projector.')
     }
     if (id === 'projector') {
-      if (reel === 'rack') { setMessage('Pick up a reel from the rack first.'); return }
-      if (film === 'playing' || film === 'soon' || film === 'loading') { setFilm('stopped'); return }
-      setMessage('')
-      setReel('loaded')
-      setFilm('loading')
-      setPlayRequest((request) => request + 1)
+      if (reel === 'rack') { setMessage('Pick up The Director from the rack first.'); return }
+      if (['playing', 'paused', 'soon', 'loading', 'blocked', 'ended'].includes(film)) { setFilm('stopped'); return }
+      setReel('loaded'); playFilm()
     }
-  }, [mode, awardOpen, changeMode, reel, film])
+  }, [mode, awardOpen, viewer, changeMode, leaveRoom, reel, film, playFilm])
   return { bearingElement, objective, mode, changeMode, touch, ship, captain, trip, videoRef, status, setStatus, nearby, setNearby,
-    focus, setFocus, reel, film, setFilm, playRequest, awardOpen, setAwardOpen, message, interact }
+    focus, setFocus, reel, film, setFilm, playRequest, playFilm, awardOpen, setAwardOpen, viewer, setViewer, leaveRoom, message, interact }
 }
